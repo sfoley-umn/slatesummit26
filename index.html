@@ -10,10 +10,18 @@
 *{box-sizing:border-box}
 
 body{
-  font-family:system-ui,-apple-system,sans-serif;
   margin:0;
-  background:#f5f7fb;
-  color:#1f2937;
+  font-family:system-ui,-apple-system,sans-serif;
+  background:#f6f7fb;
+  color:#111827;
+}
+
+/* Header */
+.top{
+  background:linear-gradient(90deg,#7a0019,#9b0a2a);
+  color:white;
+  padding:18px;
+  border-bottom:4px solid rgba(255,255,255,.1);
 }
 
 .wrap{
@@ -22,34 +30,36 @@ body{
   padding:18px;
 }
 
-.top{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:12px;
-  flex-wrap:wrap;
-  margin-bottom:16px;
-}
-
+/* Cards */
 .card{
   background:#fff;
   border:1px solid #e5e7eb;
-  border-radius:12px;
+  border-radius:14px;
   padding:14px;
-  box-shadow:0 1px 3px rgba(0,0,0,.05);
+  box-shadow:0 2px 8px rgba(0,0,0,.05);
+  margin-bottom:12px;
 }
 
+/* Controls */
 .controls{
   display:flex;
-  gap:8px;
   flex-wrap:wrap;
+  gap:10px;
   align-items:center;
 }
 
+input,select{
+  padding:8px 10px;
+  border-radius:10px;
+  border:1px solid #d1d5db;
+  background:white;
+}
+
+/* Buttons */
 button{
   cursor:pointer;
   padding:8px 12px;
-  border-radius:8px;
+  border-radius:10px;
   border:1px solid #d1d5db;
   background:#fff;
   font-weight:500;
@@ -60,26 +70,7 @@ button.active{
   border-color:#22c55e;
 }
 
-button.rate-btn{
-  min-width:40px;
-}
-
-button.rate-active{
-  background:#dbeafe;
-  border-color:#2563eb;
-}
-
-input,select{
-  padding:8px;
-  border-radius:8px;
-  border:1px solid #d1d5db;
-}
-
-.small{
-  font-size:12px;
-  color:#6b7280;
-}
-
+/* Layout */
 .grid{
   display:grid;
   grid-template-columns:2fr 1fr;
@@ -90,27 +81,38 @@ input,select{
   .grid{grid-template-columns:1fr}
 }
 
+/* Stats */
 .stats{
   display:grid;
   grid-template-columns:repeat(3,1fr);
   gap:10px;
-  margin-bottom:14px;
 }
 
 .stat{
+  background:#f9fafb;
   padding:10px;
   border-radius:10px;
-  background:#f9fafb;
   text-align:center;
 }
 
-.session{
-  margin-bottom:12px;
+/* Session grouping */
+.day-header{
+  margin:18px 0 10px;
+  font-weight:700;
+  font-size:16px;
+  color:#7a0019;
 }
 
-.session-title{
+.time-header{
+  margin:10px 0;
   font-weight:600;
-  font-size:15px;
+  font-size:13px;
+  color:#374151;
+}
+
+/* Session card */
+.session-title{
+  font-weight:700;
   margin-bottom:4px;
 }
 
@@ -124,108 +126,68 @@ input,select{
   display:flex;
   flex-wrap:wrap;
   gap:6px;
-  margin-top:10px;
+  margin-top:8px;
 }
 
 .avatar{
-  background:#e0e7ff;
-  border-radius:999px;
-  padding:4px 8px;
   font-size:11px;
+  padding:3px 8px;
+  border-radius:999px;
+  background:#e0e7ff;
 }
 
+/* View toggle */
 .view-toggle{
   display:flex;
-  gap:8px;
-  margin-bottom:14px;
+  gap:10px;
+  margin:12px 0;
 }
 
 .view-btn.active-view{
-  background:#2563eb;
-  color:#fff;
-  border-color:#2563eb;
+  background:#7a0019;
+  color:white;
+  border-color:#7a0019;
 }
 
-.team-session{
-  border-bottom:1px solid #eef2f7;
-  padding:10px 0;
-}
-
-.team-session:last-child{
-  border-bottom:none;
-}
-
-.user-row{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:8px;
-  padding:4px 0;
-}
-
-.rating-pill{
-  background:#eff6ff;
-  color:#1d4ed8;
-  padding:2px 8px;
-  border-radius:999px;
-  font-size:11px;
-}
-
-.action-row{
-  display:flex;
-  gap:8px;
-  flex-wrap:wrap;
-  align-items:center;
-}
-
-.rating-buttons{
-  display:flex;
-  gap:6px;
-}
-
-.team-count{
-  font-size:12px;
-  color:#4b5563;
-  margin-top:6px;
-}
+.small{font-size:12px;color:#6b7280}
 </style>
 </head>
 
 <body>
 
+<div class="top">
+  <h2 style="margin:0">Slate Summit Team Planner</h2>
+  <div class="small" style="color:#f3f4f6">Live summit schedule + team planning</div>
+</div>
+
 <div class="wrap">
 
-  <div class="top">
-    <div>
-      <h2 style="margin:0">Slate Summit Team Planner</h2>
-      <div class="small">Live summit schedule + shared coworker planning</div>
-    </div>
-    <div id="status" class="small">Loading…</div>
-  </div>
-
   <div class="view-toggle">
-
     <button id="individualBtn" class="view-btn active-view" onclick="setView('individual')">
-      Individual View
+      Individual
     </button>
-
     <button id="teamBtn" class="view-btn" onclick="setView('team')">
-      Team View
+      Team
     </button>
-
   </div>
 
   <div class="grid">
 
+    <!-- LEFT -->
     <div>
 
-      <div class="card" style="margin-bottom:14px">
-
+      <div class="card">
         <div class="controls">
 
-          <input id="name" placeholder="Your name" />
-
-          <button onclick="saveName()">Set Name</button>
+          <!-- NAME DROPDOWN -->
+          <select id="name" onchange="saveName()">
+            <option value="">Select name</option>
+            <option>Austin</option>
+            <option>Elma</option>
+            <option>Kelsey</option>
+            <option>Kristin</option>
+            <option>Sean</option>
+          </select>
 
           <input id="search" placeholder="Search sessions" oninput="render()" />
 
@@ -233,372 +195,253 @@ input,select{
             <option value="">All days</option>
           </select>
 
-        </div>
+          <select id="timeFilter" onchange="render()">
+            <option value="">All times</option>
+          </select>
 
+        </div>
       </div>
 
       <div id="sessions"></div>
 
     </div>
 
+    <!-- RIGHT -->
     <div>
 
       <div class="card">
-
         <h3 style="margin-top:0">Team Summary</h3>
 
         <div class="stats">
-
           <div class="stat">
             <div id="statSessions">0</div>
             <div class="small">Sessions</div>
           </div>
-
           <div class="stat">
             <div id="statSelected">0</div>
             <div class="small">My Picks</div>
           </div>
-
           <div class="stat">
             <div id="statPeople">0</div>
-            <div class="small">Team Members</div>
+            <div class="small">People</div>
           </div>
-
         </div>
 
         <div id="teamRoster"></div>
-
       </div>
 
     </div>
 
   </div>
-
 </div>
 
 <script>
 
 const API_URL =
-'https://slate--partners-technolutions-net.cdn.technolutions.net/portal/public-summit-schedule?cmd=search&cache=900&level=&track=&day=';
+'https://slate--partners-technolutions-net.cdn.technolutions.net/portal/public-summit-schedule?cmd=search&cache=900';
 
 const SHEET_API =
 'https://script.google.com/macros/s/AKfycbz8EvFEf0-1-rqyTb-KExaMK8uagfoaYL4-hoLcqabj5CYVs02jjmqAqMy08-CKDgVB/exec';
 
-let currentUser =
-  localStorage.getItem('summitUser') || '';
-
+let currentUser = localStorage.getItem('summitUser') || '';
+let sessions = [];
+let picks = {};
 let currentView = 'individual';
 
-let sessions = [];
-
-let picks = {};
-
-if(currentUser){
-  document.getElementById('name').value =
-    currentUser;
+function saveName(){
+  currentUser = document.getElementById('name').value;
+  localStorage.setItem('summitUser', currentUser);
+  render();
 }
 
-function saveName(){
-
-  currentUser =
-    document.getElementById('name').value.trim();
-
-  localStorage.setItem('summitUser', currentUser);
-
+function setView(v){
+  currentView = v;
+  document.getElementById('individualBtn').classList.toggle('active-view', v==='individual');
+  document.getElementById('teamBtn').classList.toggle('active-view', v==='team');
   render();
 }
 
 function safe(v){
-  return String(v || '')
-    .replace(/[&<>]/g,m=>({
-      '&':'&amp;',
-      '<':'&lt;',
-      '>':'&gt;'
-    }[m]));
+  return String(v||'').replace(/[&<>]/g,m=>({
+    '&':'&amp;','<':'&lt;','>':'&gt;'
+  }[m]));
 }
 
-function setView(view){
-
-  currentView = view;
-
-  document.getElementById('individualBtn')
-    .classList.toggle('active-view', view === 'individual');
-
-  document.getElementById('teamBtn')
-    .classList.toggle('active-view', view === 'team');
-
-  render();
-}
-
+/* ---------- LOAD ---------- */
 async function loadSessions(){
 
-  try{
+  const res = await fetch(API_URL);
+  const txt = await res.text();
 
-    const res = await fetch(API_URL);
+  const doc = new DOMParser().parseFromString(txt,'text/html');
+  const rows = [...doc.querySelectorAll('tbody tr')];
+  const headers = [...doc.querySelectorAll('thead th')].map(h=>h.textContent.trim());
 
-    const txt = await res.text();
+  sessions = rows.map((tr,i)=>{
+    const obj = {};
+    [...tr.children].forEach((td,j)=>obj[headers[j]]=td.textContent.trim());
 
-    const doc = new DOMParser()
-      .parseFromString(txt,'text/html');
+    return {
+      id:'s'+i,
+      title:obj['Session Title'] || '',
+      day:obj['Day'] || '',
+      time:obj['Time'] || '',
+      location:obj['Location'] || '',
+    };
+  });
 
-    const table = doc.querySelector('table');
+  populateFilters();
+  document.getElementById('sessions').innerHTML='';
+  render();
+}
 
-    const rows = [...table.querySelectorAll('tbody tr')];
+/* ---------- FILTERS ---------- */
+function populateFilters(){
 
-    const headers = [...table.querySelectorAll('thead th')]
-      .map(th => th.textContent.trim());
+  const days = [...new Set(sessions.map(s=>s.day).filter(Boolean))];
+  const times = [...new Set(sessions.map(s=>s.time).filter(Boolean))];
 
-    sessions = rows.map((tr,i)=>{
+  const daySel = document.getElementById('dayFilter');
+  const timeSel = document.getElementById('timeFilter');
 
-      const obj = {};
+  days.sort().forEach(d=>{
+    const o=document.createElement('option');
+    o.value=o.textContent=d;
+    daySel.appendChild(o);
+  });
 
-      [...tr.children].forEach((td,j)=>{
-        obj[headers[j]] = td.textContent.trim();
-      });
+  times.sort().forEach(t=>{
+    const o=document.createElement('option');
+    o.value=o.textContent=t;
+    timeSel.appendChild(o);
+  });
+}
 
-      return {
-        id:'s'+i,
-        title:obj['Session Title'] || Object.values(obj)[0],
-        day:obj['Day'] || '',
-        time:obj['Time'] || '',
-        track:obj['Track'] || '',
-        raw:obj
-      };
-    });
+/* ---------- PICKS ---------- */
+async function listenPicks(){
+  const r = await fetch(SHEET_API);
+  const data = await r.json();
 
-    const days = [...new Set(sessions.map(s=>s.day).filter(Boolean))];
-
-    const dayFilter = document.getElementById('dayFilter');
-
-    days.forEach(d=>{
-      const o = document.createElement('option');
-      o.value = d;
-      o.textContent = d;
-      dayFilter.appendChild(o);
-    });
-
-    document.getElementById('status')
-      .textContent = `Loaded ${sessions.length} live sessions`;
-
-  }catch(e){
-
-    document.getElementById('status')
-      .textContent = 'Could not load live sessions';
-  }
+  picks = {};
+  data.forEach(row=>{
+    if(!picks[row.sessionId]) picks[row.sessionId]={};
+    picks[row.sessionId][row.userName]={
+      selected: row.selected === true || row.selected === 'TRUE',
+      rating: Number(row.rating||0)
+    };
+  });
 
   render();
 }
 
-function listenPicks(){
+/* ---------- SAVE ---------- */
+async function saveSelection(id,title,selected,rating){
 
-  fetch(SHEET_API)
-    .then(r=>r.json())
-    .then(data=>{
+  const form = new URLSearchParams();
+  form.append('sessionId',id);
+  form.append('sessionTitle',title);
+  form.append('userName',currentUser);
+  form.append('selected',selected);
+  form.append('rating',rating);
 
-      picks = {};
-
-      data.forEach(row=>{
-
-        if(!picks[row.sessionId]){
-          picks[row.sessionId]={};
-        }
-
-        picks[row.sessionId][row.userName] = {
-          selected: row.selected === true || row.selected === 'TRUE',
-          rating: Number(row.rating || 0)
-        };
-
-      });
-
-      render();
-    });
-}
-
-//
-// ✅ FIXED CORS-SAFE SAVE FUNCTION
-//
-async function saveSelection(
-  sessionId,
-  sessionTitle,
-  selected,
-  rating
-){
-
-  const formData = new URLSearchParams();
-
-  formData.append('sessionId', sessionId);
-  formData.append('sessionTitle', sessionTitle);
-  formData.append('userName', currentUser);
-  formData.append('selected', selected);
-  formData.append('rating', rating);
-
-  await fetch(SHEET_API, {
-    method:'POST',
-    body: formData
-  });
-
+  await fetch(SHEET_API,{method:'POST',body:form});
   listenPicks();
 }
 
-async function togglePick(id){
+/* ---------- ACTIONS ---------- */
+function togglePick(id){
+  if(!currentUser) return alert('Select a name first');
 
-  if(!currentUser){
-    alert('Set your name first');
-    return;
-  }
+  const s = sessions.find(x=>x.id===id);
+  const ex = picks?.[id]?.[currentUser];
 
-  const session = sessions.find(s=>s.id===id);
-
-  const existing = picks?.[id]?.[currentUser];
-
-  await saveSelection(
-    id,
-    session.title,
-    !(existing?.selected),
-    existing?.rating || 0
-  );
+  saveSelection(id,s.title,!(ex?.selected),ex?.rating||0);
 }
 
-async function setRating(id, rating){
-
-  if(!currentUser){
-    alert('Set your name first');
-    return;
-  }
-
-  const session = sessions.find(s=>s.id===id);
-
-  const existing = picks?.[id]?.[currentUser];
-
-  await saveSelection(
-    id,
-    session.title,
-    existing?.selected || false,
-    rating
-  );
-}
-
-function getAllUsers(){
-
-  return [...new Set(
-    Object.values(picks)
-      .flatMap(x=>Object.keys(x||{}))
-  )];
-}
-
+/* ---------- RENDER ---------- */
 function render(){
 
   const q = document.getElementById('search').value.toLowerCase();
   const day = document.getElementById('dayFilter').value;
+  const time = document.getElementById('timeFilter').value;
 
-  const filtered = sessions.filter(s=>(
+  const filtered = sessions.filter(s=>
     (!q || s.title.toLowerCase().includes(q)) &&
-    (!day || s.day===day)
-  ));
-
-  const allUsers = getAllUsers();
-
-  document.getElementById('statSessions').textContent = sessions.length;
-
-  const myKey = currentUser;
-
-  const mySelections = filtered.filter(
-    s=>picks?.[s.id]?.[myKey]?.selected
-  ).length;
-
-  document.getElementById('statSelected').textContent = mySelections;
-
-  document.getElementById('statPeople').textContent = allUsers.length;
-
-  document.getElementById('teamRoster').innerHTML =
-    allUsers.length
-      ? allUsers.map(u=>`<div class='small'>• ${u}</div>`).join('')
-      : '<div class="small">No selections yet</div>';
+    (!day || s.day===day) &&
+    (!time || s.time===time)
+  ).sort((a,b)=>a.day.localeCompare(b.day)||a.time.localeCompare(b.time));
 
   const el = document.getElementById('sessions');
-  el.innerHTML='';
 
-  if(currentView==='individual'){
+  const allUsers = [...new Set(Object.values(picks).flatMap(x=>Object.keys(x||{})))];
 
-    filtered.forEach(s=>{
+  document.getElementById('statSessions').textContent = sessions.length;
+  document.getElementById('statPeople').textContent = allUsers.length;
+  document.getElementById('statSelected').textContent =
+    filtered.filter(s=>picks?.[s.id]?.[currentUser]?.selected).length;
 
-      const users = picks[s.id]||{};
-      const mine = users?.[currentUser]?.selected;
-      const myRating = users?.[currentUser]?.rating || 0;
+  document.getElementById('teamRoster').innerHTML =
+    allUsers.map(u=>`<div class="small">• ${u}</div>`).join('');
 
-      const selectedUsers = Object.entries(users)
-        .filter(([_,v])=>v.selected);
-
-      el.innerHTML += `
-        <div class="card session">
-          <div class="session-title">${safe(s.title)}</div>
-          <div class="meta">${s.day} ${s.time} ${s.track}</div>
-
-          <button class="${mine?'active':''}"
-            onclick="togglePick('${s.id}')">
-            ${mine?'Selected':'Select Session'}
-          </button>
-
-          <div class="rating-buttons">
-            ${[1,2,3,4,5].map(r=>`
-              <button
-                class="rate-btn ${myRating===r?'rate-active':''}"
-                onclick="setRating('${s.id}',${r})">${r}</button>
-            `).join('')}
-          </div>
-
-          <div class="team-count">
-            ${selectedUsers.length} attending
-          </div>
-
-          <div class="avatars">
-            ${selectedUsers.map(([u,v])=>
-              `<span class="avatar">${u}</span>`
-            ).join('')}
-          </div>
-
-        </div>
-      `;
-    });
-
-  } else {
-
-    const selectedSessions = filtered.filter(s=>
+  if(currentView==='team'){
+    const selected = filtered.filter(s=>
       Object.values(picks[s.id]||{}).some(v=>v.selected)
     );
 
-    el.innerHTML = selectedSessions.map(s=>{
-
-      const users = Object.entries(picks[s.id]||{})
-        .filter(([_,v])=>v.selected);
+    el.innerHTML = selected.map(s=>{
+      const users = Object.entries(picks[s.id]||{}).filter(([_,v])=>v.selected);
 
       return `
-        <div class="card session">
+        <div class="card">
           <div class="session-title">${safe(s.title)}</div>
-          <div class="meta">${s.day} ${s.time} ${s.track}</div>
-
-          <div class="team-count">
-            ${users.length} attending
-          </div>
-
-          <div>
-            ${users.map(([u,v])=>`
-              <div class="small">${u} ${v.rating?`(${v.rating}/5)`:''}</div>
-            `).join('')}
-          </div>
+          <div class="meta">${s.day} • ${s.time} • ${s.location}</div>
+          <div class="small">${users.length} attending</div>
         </div>
       `;
     }).join('');
 
-    if(!selectedSessions.length){
-      el.innerHTML = `<div class="card">No selections yet</div>`;
-    }
+    return;
   }
+
+  /* INDIVIDUAL VIEW WITH GROUPING */
+  let html='';
+  let lastDay='', lastTime='';
+
+  filtered.forEach(s=>{
+
+    if(s.day!==lastDay){
+      html+=`<div class="day-header">${s.day}</div>`;
+      lastDay=s.day;
+      lastTime='';
+    }
+
+    if(s.time!==lastTime){
+      html+=`<div class="time-header">${s.time}</div>`;
+      lastTime=s.time;
+    }
+
+    const mine = picks?.[s.id]?.[currentUser]?.selected;
+
+    html+=`
+      <div class="card">
+        <div class="session-title">${safe(s.title)}</div>
+        <div class="meta">${s.location}</div>
+
+        <button class="${mine?'active':''}" onclick="togglePick('${s.id}')">
+          ${mine?'Selected':'Select'}
+        </button>
+      </div>
+    `;
+  });
+
+  el.innerHTML = html || `<div class="card">No sessions found</div>`;
 }
 
+/* INIT */
 loadSessions();
 listenPicks();
 
 </script>
+
 </body>
 </html>
