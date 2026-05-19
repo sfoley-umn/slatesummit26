@@ -2,274 +2,602 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
 <title>Summit Team Planner</title>
 
 <style>
-body{font-family:system-ui;margin:0;background:#f5f7fb;color:#1f2937}
-.wrap{max-width:1400px;margin:auto;padding:18px}
+*{box-sizing:border-box}
 
-.card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:14px;margin-bottom:12px}
-.small{font-size:12px;color:#6b7280}
-
-.controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-input,select{padding:8px;border:1px solid #ddd;border-radius:8px}
-
-button{padding:8px 12px;border:1px solid #ccc;border-radius:8px;background:#fff;cursor:pointer}
-button.active{background:#dcfce7;border-color:#22c55e}
-
-.grid{display:grid;grid-template-columns:2fr 1fr;gap:16px}
-@media(max-width:1000px){.grid{grid-template-columns:1fr}}
-
-.session-title{font-weight:600}
-.meta{font-size:12px;color:#666;margin-bottom:8px}
-
-.day-header{
-  margin:18px 0 8px;
-  font-size:14px;
-  font-weight:700;
-  color:#111827;
+body{
+  font-family:system-ui,-apple-system,sans-serif;
+  margin:0;
+  background:#f5f7fb;
+  color:#1f2937;
 }
 
-.time-header{
-  margin:12px 0 6px;
-  font-size:13px;
+.wrap{
+  max-width:1400px;
+  margin:0 auto;
+  padding:18px;
+}
+
+.top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  flex-wrap:wrap;
+  margin-bottom:16px;
+}
+
+.card{
+  background:#fff;
+  border:1px solid #e5e7eb;
+  border-radius:12px;
+  padding:14px;
+  box-shadow:0 1px 3px rgba(0,0,0,.05);
+}
+
+.controls{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  align-items:center;
+}
+
+button{
+  cursor:pointer;
+  padding:8px 12px;
+  border-radius:8px;
+  border:1px solid #d1d5db;
+  background:#fff;
+  font-weight:500;
+}
+
+button.active{
+  background:#dcfce7;
+  border-color:#22c55e;
+}
+
+button.rate-btn{
+  min-width:40px;
+}
+
+button.rate-active{
+  background:#dbeafe;
+  border-color:#2563eb;
+}
+
+input,select{
+  padding:8px;
+  border-radius:8px;
+  border:1px solid #d1d5db;
+}
+
+.small{
+  font-size:12px;
+  color:#6b7280;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:2fr 1fr;
+  gap:16px;
+}
+
+@media(max-width:1000px){
+  .grid{grid-template-columns:1fr}
+}
+
+.stats{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+  margin-bottom:14px;
+}
+
+.stat{
+  padding:10px;
+  border-radius:10px;
+  background:#f9fafb;
+  text-align:center;
+}
+
+.session{
+  margin-bottom:12px;
+}
+
+.session-title{
   font-weight:600;
-  color:#374151;
+  font-size:15px;
+  margin-bottom:4px;
 }
 
-.avatar{background:#e0e7ff;padding:4px 8px;border-radius:999px;font-size:11px;margin:2px;display:inline-block}
+.meta{
+  font-size:12px;
+  color:#6b7280;
+  margin-bottom:10px;
+}
+
+.avatars{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  margin-top:10px;
+}
+
+.avatar{
+  background:#e0e7ff;
+  border-radius:999px;
+  padding:4px 8px;
+  font-size:11px;
+}
+
+.view-toggle{
+  display:flex;
+  gap:8px;
+  margin-bottom:14px;
+}
+
+.view-btn.active-view{
+  background:#2563eb;
+  color:#fff;
+  border-color:#2563eb;
+}
+
+.team-session{
+  border-bottom:1px solid #eef2f7;
+  padding:10px 0;
+}
+
+.team-session:last-child{
+  border-bottom:none;
+}
+
+.user-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  padding:4px 0;
+}
+
+.rating-pill{
+  background:#eff6ff;
+  color:#1d4ed8;
+  padding:2px 8px;
+  border-radius:999px;
+  font-size:11px;
+}
+
+.action-row{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  align-items:center;
+}
+
+.rating-buttons{
+  display:flex;
+  gap:6px;
+}
+
+.team-count{
+  font-size:12px;
+  color:#4b5563;
+  margin-top:6px;
+}
 </style>
 </head>
 
 <body>
+
 <div class="wrap">
 
-<div class="card">
-  <div class="controls">
-
-    <select id="name"></select>
-
-    <button onclick="saveName()">Set Name</button>
-
-    <input id="search" placeholder="Search sessions" oninput="render()"/>
-
-    <select id="dayFilter" onchange="render()"></select>
-
-    <select id="timeFilter" onchange="render()"></select>
-
-  </div>
-</div>
-
-<div class="grid">
-
-  <div id="sessions"></div>
-
-  <div class="card">
-    <div class="small">Team Summary</div>
-    <div id="teamRoster"></div>
+  <div class="top">
+    <div>
+      <h2 style="margin:0">Slate Summit Team Planner</h2>
+      <div class="small">Live summit schedule + shared coworker planning</div>
+    </div>
+    <div id="status" class="small">Loading…</div>
   </div>
 
-</div>
+  <div class="view-toggle">
+
+    <button id="individualBtn" class="view-btn active-view" onclick="setView('individual')">
+      Individual View
+    </button>
+
+    <button id="teamBtn" class="view-btn" onclick="setView('team')">
+      Team View
+    </button>
+
+  </div>
+
+  <div class="grid">
+
+    <div>
+
+      <div class="card" style="margin-bottom:14px">
+
+        <div class="controls">
+
+          <input id="name" placeholder="Your name" />
+
+          <button onclick="saveName()">Set Name</button>
+
+          <input id="search" placeholder="Search sessions" oninput="render()" />
+
+          <select id="dayFilter" onchange="render()">
+            <option value="">All days</option>
+          </select>
+
+        </div>
+
+      </div>
+
+      <div id="sessions"></div>
+
+    </div>
+
+    <div>
+
+      <div class="card">
+
+        <h3 style="margin-top:0">Team Summary</h3>
+
+        <div class="stats">
+
+          <div class="stat">
+            <div id="statSessions">0</div>
+            <div class="small">Sessions</div>
+          </div>
+
+          <div class="stat">
+            <div id="statSelected">0</div>
+            <div class="small">My Picks</div>
+          </div>
+
+          <div class="stat">
+            <div id="statPeople">0</div>
+            <div class="small">Team Members</div>
+          </div>
+
+        </div>
+
+        <div id="teamRoster"></div>
+
+      </div>
+
+    </div>
+
+  </div>
 
 </div>
 
 <script>
 
+const API_URL =
+'https://slate--partners-technolutions-net.cdn.technolutions.net/portal/public-summit-schedule?cmd=search&cache=900&level=&track=&day=';
+
 const SHEET_API =
 'https://script.google.com/macros/s/AKfycbz8EvFEf0-1-rqyTb-KExaMK8uagfoaYL4-hoLcqabj5CYVs02jjmqAqMy08-CKDgVB/exec';
 
-const NAMES = ["Austin","Elma","Kelsey","Kristin","Sean"];
+let currentUser =
+  localStorage.getItem('summitUser') || '';
+
+let currentView = 'individual';
 
 let sessions = [];
-let picks = {};
-let currentUser = localStorage.getItem("user") || "";
 
-//
-// INIT NAME DROPDOWN
-//
-const nameSelect = document.getElementById("name");
-NAMES.forEach(n=>{
-  const o=document.createElement("option");
-  o.value=n;
-  o.textContent=n;
-  nameSelect.appendChild(o);
-});
-if(currentUser) nameSelect.value=currentUser;
+let picks = {};
+
+if(currentUser){
+  document.getElementById('name').value =
+    currentUser;
+}
 
 function saveName(){
-  currentUser = nameSelect.value;
-  localStorage.setItem("user",currentUser);
-}
 
-function safe(v){
-  return String(v||'').replace(/[&<>]/g,m=>({ "&":"&amp;","<":"&lt;",">":"&gt;" }[m]));
-}
+  currentUser =
+    document.getElementById('name').value.trim();
 
-//
-// LOAD SESSIONS (FAST PARSE)
-//
-async function loadSessions(){
-
-  const res = await fetch(SHEET_API);
-  const data = await res.json();
-
-  // build pick map
-  picks = {};
-  data.forEach(r=>{
-    if(!picks[r.sessionId]) picks[r.sessionId]={};
-    picks[r.sessionId][r.userName]=r;
-  });
+  localStorage.setItem('summitUser', currentUser);
 
   render();
 }
 
-//
-// BUILD FILTER OPTIONS ONCE
-//
-function buildFilters(){
+function safe(v){
+  return String(v || '')
+    .replace(/[&<>]/g,m=>({
+      '&':'&amp;',
+      '<':'&lt;',
+      '>':'&gt;'
+    }[m]));
+}
 
-  const days = [...new Set(sessions.map(s=>s.day).filter(Boolean))];
-  const times = [...new Set(sessions.map(s=>s.time).filter(Boolean))];
+function setView(view){
 
-  const daySel = document.getElementById("dayFilter");
-  const timeSel = document.getElementById("timeFilter");
+  currentView = view;
 
-  if(daySel.options.length===0){
-    daySel.innerHTML = `<option value="">All days</option>` +
-      days.map(d=>`<option>${d}</option>`).join('');
+  document.getElementById('individualBtn')
+    .classList.toggle('active-view', view === 'individual');
+
+  document.getElementById('teamBtn')
+    .classList.toggle('active-view', view === 'team');
+
+  render();
+}
+
+async function loadSessions(){
+
+  try{
+
+    const res = await fetch(API_URL);
+
+    const txt = await res.text();
+
+    const doc = new DOMParser()
+      .parseFromString(txt,'text/html');
+
+    const table = doc.querySelector('table');
+
+    const rows = [...table.querySelectorAll('tbody tr')];
+
+    const headers = [...table.querySelectorAll('thead th')]
+      .map(th => th.textContent.trim());
+
+    sessions = rows.map((tr,i)=>{
+
+      const obj = {};
+
+      [...tr.children].forEach((td,j)=>{
+        obj[headers[j]] = td.textContent.trim();
+      });
+
+      return {
+        id:'s'+i,
+        title:obj['Session Title'] || Object.values(obj)[0],
+        day:obj['Day'] || '',
+        time:obj['Time'] || '',
+        track:obj['Track'] || '',
+        raw:obj
+      };
+    });
+
+    const days = [...new Set(sessions.map(s=>s.day).filter(Boolean))];
+
+    const dayFilter = document.getElementById('dayFilter');
+
+    days.forEach(d=>{
+      const o = document.createElement('option');
+      o.value = d;
+      o.textContent = d;
+      dayFilter.appendChild(o);
+    });
+
+    document.getElementById('status')
+      .textContent = `Loaded ${sessions.length} live sessions`;
+
+  }catch(e){
+
+    document.getElementById('status')
+      .textContent = 'Could not load live sessions';
   }
 
-  if(timeSel.options.length===0){
-    timeSel.innerHTML = `<option value="">All times</option>` +
-      times.map(t=>`<option>${t}</option>`).join('');
-  }
+  render();
+}
+
+function listenPicks(){
+
+  fetch(SHEET_API)
+    .then(r=>r.json())
+    .then(data=>{
+
+      picks = {};
+
+      data.forEach(row=>{
+
+        if(!picks[row.sessionId]){
+          picks[row.sessionId]={};
+        }
+
+        picks[row.sessionId][row.userName] = {
+          selected: row.selected === true || row.selected === 'TRUE',
+          rating: Number(row.rating || 0)
+        };
+
+      });
+
+      render();
+    });
 }
 
 //
-// RENDER
+// ✅ FIXED CORS-SAFE SAVE FUNCTION
 //
+async function saveSelection(
+  sessionId,
+  sessionTitle,
+  selected,
+  rating
+){
+
+  const formData = new URLSearchParams();
+
+  formData.append('sessionId', sessionId);
+  formData.append('sessionTitle', sessionTitle);
+  formData.append('userName', currentUser);
+  formData.append('selected', selected);
+  formData.append('rating', rating);
+
+  await fetch(SHEET_API, {
+    method:'POST',
+    body: formData
+  });
+
+  listenPicks();
+}
+
+async function togglePick(id){
+
+  if(!currentUser){
+    alert('Set your name first');
+    return;
+  }
+
+  const session = sessions.find(s=>s.id===id);
+
+  const existing = picks?.[id]?.[currentUser];
+
+  await saveSelection(
+    id,
+    session.title,
+    !(existing?.selected),
+    existing?.rating || 0
+  );
+}
+
+async function setRating(id, rating){
+
+  if(!currentUser){
+    alert('Set your name first');
+    return;
+  }
+
+  const session = sessions.find(s=>s.id===id);
+
+  const existing = picks?.[id]?.[currentUser];
+
+  await saveSelection(
+    id,
+    session.title,
+    existing?.selected || false,
+    rating
+  );
+}
+
+function getAllUsers(){
+
+  return [...new Set(
+    Object.values(picks)
+      .flatMap(x=>Object.keys(x||{}))
+  )];
+}
+
 function render(){
 
-  const q = document.getElementById("search").value.toLowerCase();
-  const day = document.getElementById("dayFilter").value;
-  const time = document.getElementById("timeFilter").value;
+  const q = document.getElementById('search').value.toLowerCase();
+  const day = document.getElementById('dayFilter').value;
 
-  const el = document.getElementById("sessions");
-  el.innerHTML = "";
-
-  buildFilters();
-
-  const filtered = sessions.filter(s=>
+  const filtered = sessions.filter(s=>(
     (!q || s.title.toLowerCase().includes(q)) &&
-    (!day || s.day===day) &&
-    (!time || s.time===time)
-  );
+    (!day || s.day===day)
+  ));
 
-  // group by day + time
-  const grouped = {};
+  const allUsers = getAllUsers();
 
-  filtered.forEach(s=>{
-    grouped[s.day] ??= {};
-    grouped[s.day][s.time] ??= [];
-    grouped[s.day][s.time].push(s);
-  });
+  document.getElementById('statSessions').textContent = sessions.length;
 
-  for(const d of Object.keys(grouped)){
+  const myKey = currentUser;
 
-    el.innerHTML += `<div class="day-header">${d}</div>`;
+  const mySelections = filtered.filter(
+    s=>picks?.[s.id]?.[myKey]?.selected
+  ).length;
 
-    for(const t of Object.keys(grouped[d])){
+  document.getElementById('statSelected').textContent = mySelections;
 
-      el.innerHTML += `<div class="time-header">${t}</div>`;
+  document.getElementById('statPeople').textContent = allUsers.length;
 
-      grouped[d][t].forEach(s=>{
+  document.getElementById('teamRoster').innerHTML =
+    allUsers.length
+      ? allUsers.map(u=>`<div class='small'>• ${u}</div>`).join('')
+      : '<div class="small">No selections yet</div>';
 
-        const users = picks[s.id] || {};
-        const selected = Object.values(users).filter(u=>u.selected);
+  const el = document.getElementById('sessions');
+  el.innerHTML='';
 
-        const mine = users[currentUser]?.selected;
+  if(currentView==='individual'){
 
-        el.innerHTML += `
-          <div class="card">
-            <div class="session-title">${safe(s.title)}</div>
+    filtered.forEach(s=>{
 
-            <div class="meta">
-              ${s.day} • ${s.time} • ${s.raw?.Location || "No location"}
-            </div>
+      const users = picks[s.id]||{};
+      const mine = users?.[currentUser]?.selected;
+      const myRating = users?.[currentUser]?.rating || 0;
 
-            <button class="${mine?'active':''}"
-              onclick="toggle('${s.id}','${safe(s.title)}')">
-              ${mine ? "Selected" : "Select"}
-            </button>
+      const selectedUsers = Object.entries(users)
+        .filter(([_,v])=>v.selected);
 
-            <div class="small">
-              ${selected.length} attending
-            </div>
+      el.innerHTML += `
+        <div class="card session">
+          <div class="session-title">${safe(s.title)}</div>
+          <div class="meta">${s.day} ${s.time} ${s.track}</div>
 
-            <div>
-              ${selected.map(u=>`<span class="avatar">${u.userName}</span>`).join("")}
-            </div>
+          <button class="${mine?'active':''}"
+            onclick="togglePick('${s.id}')">
+            ${mine?'Selected':'Select Session'}
+          </button>
+
+          <div class="rating-buttons">
+            ${[1,2,3,4,5].map(r=>`
+              <button
+                class="rate-btn ${myRating===r?'rate-active':''}"
+                onclick="setRating('${s.id}',${r})">${r}</button>
+            `).join('')}
           </div>
-        `;
-      });
+
+          <div class="team-count">
+            ${selectedUsers.length} attending
+          </div>
+
+          <div class="avatars">
+            ${selectedUsers.map(([u,v])=>
+              `<span class="avatar">${u}</span>`
+            ).join('')}
+          </div>
+
+        </div>
+      `;
+    });
+
+  } else {
+
+    const selectedSessions = filtered.filter(s=>
+      Object.values(picks[s.id]||{}).some(v=>v.selected)
+    );
+
+    el.innerHTML = selectedSessions.map(s=>{
+
+      const users = Object.entries(picks[s.id]||{})
+        .filter(([_,v])=>v.selected);
+
+      return `
+        <div class="card session">
+          <div class="session-title">${safe(s.title)}</div>
+          <div class="meta">${s.day} ${s.time} ${s.track}</div>
+
+          <div class="team-count">
+            ${users.length} attending
+          </div>
+
+          <div>
+            ${users.map(([u,v])=>`
+              <div class="small">${u} ${v.rating?`(${v.rating}/5)`:''}</div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    if(!selectedSessions.length){
+      el.innerHTML = `<div class="card">No selections yet</div>`;
     }
   }
 }
 
-//
-// TOGGLE
-//
-async function toggle(id,title){
-
-  if(!currentUser) return alert("Pick name");
-
-  const existing = picks[id]?.[currentUser];
-
-  await fetch(SHEET_API,{
-    method:"POST",
-    body:new URLSearchParams({
-      sessionId:id,
-      sessionTitle:title,
-      userName:currentUser,
-      selected: !existing?.selected,
-      rating: existing?.rating || 0
-    })
-  });
-
-  loadSessions();
-}
-
-//
-// BOOT
-//
-async function init(){
-
-  const res = await fetch(SHEET_API);
-  const data = await res.json();
-
-  // build session list from sheet data (fast path)
-  const map = new Map();
-
-  data.forEach(r=>{
-    if(!map.has(r.sessionId)){
-      map.set(r.sessionId,{
-        id:r.sessionId,
-        title:r.sessionTitle,
-        day:r.day || "",
-        time:r.time || "",
-        raw:r
-      });
-    }
-  });
-
-  sessions = [...map.values()];
-
-  await loadSessions();
-}
-
-init();
+loadSessions();
+listenPicks();
 
 </script>
 </body>
