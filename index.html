@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Summit Team Planner</title>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<style>
+body{font-family:Arial,sans-serif;margin:0;padding:20px;background:#f7f7f7}
+.header{margin-bottom:20px}.session{background:#fff;border:1px solid #ddd;border-radius:8px;padding:12px;margin-bottom:10px}
+.controls{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}.pill{background:#eef;padding:2px 8px;border-radius:12px;font-size:12px}
+button{cursor:pointer;padding:6px 10px;border-radius:6px;border:1px solid #ccc;background:white}
+button.active{background:#dff5e8;border-color:#1d9e75}
+input,select{padding:6px;border-radius:6px;border:1px solid #ccc}
+.small{font-size:12px;color:#666}
+</style>
+</head>
+<body>
+<div class="header">
+<h2>Slate Summit Team Planner</h2>
+<p class="small">Live schedule + shared team selections</p>
+</div>
+<div class="controls">
+<input id="name" placeholder="Your name" />
+<button onclick="saveName()">Set Name</button>
+<input id="search" placeholder="Search sessions" oninput="render()" />
+</div>
+<div id="status" class="small">Loading...</div>
+<div id="sessions"></div>
+<script>
+const API_URL='https://slate--partners-technolutions-net.cdn.technolutions.net/portal/public-summit-schedule?cmd=search&cache=900&level=&track=&day=';
+
+// Replace with your Firebase project config
+const firebaseConfig={
+  apiKey:'YOUR_API_KEY',
+  authDomain:'YOUR_PROJECT.firebaseapp.com',
+  databaseURL:'https://YOUR_PROJECT-default-rtdb.firebaseio.com',
+  projectId:'YOUR_PROJECT'
+};
+firebase.initializeApp(firebaseConfig);
+const db=firebase.database();
+
+let currentUser=localStorage.getItem('summitUser')||'';
+let sessions=[];
+let picks={};
+if(currentUser) document.getElementById('name').value=currentUser;
+
+function saveName(){
+  currentUser=document.getElementById('name').value.trim();
+  localStorage.setItem('summitUser',currentUser);
+  render();
+}
+
+function normalizeRows(rows){
+  return rows.map((r,i)=>({
+    id:'s'+i,
+    title:r['Session Title']||Object.values(r)[0]||'Untitled',
+    day:r['Day']||'',
+    time:r['Time']||'',
+    track:r['Track']||''
+  }));
+}
+
+async function loadSessions(){
+  const res=await fetch(API_URL);
+  const txt=await res.text();
+  const doc=new DOMParser().parseFromString(txt,'text/html');
+  const table=doc.querySelector('table');
+  const rows=[...table.querySelectorAll('tbody tr')];
+  const headers=[...table.querySelectorAll('thead th')].map(th=>th.textContent.trim());
+  const parsed=rows.map(tr=>{
+    const obj={};
+    [...tr.children].forEach((td,i)=>obj[headers[i]]=td.textContent.trim());
+    return obj;
+  });
+  sessions=normalizeRows(parsed);
+  document.getElementById('status').textContent=`Loaded ${sessions.length} sessions`;
+  render();
+}
+
+function listenPicks(){
+  db.ref('summit2026').on('value',snap=>{
+    picks=snap.val()||{};
+    render();
+  });
+}
+
+function togglePick(sessionId){
+  if(!currentUser){ alert('Set your name first'); return; }
+  const path=`summit2026/${sessionId}/${currentUser}`;
+  const existing=picks?.[sessionId]?.[currentUser];
+  db.ref(path).set(existing?null:true);
+}
+
+function render(){
+  const q=document.getElementById('search').value.toLowerCase();
+  const el=document.getElementById('sessions');
+  el.innerHTML='';
+  sessions.filter(s=>s.title.toLowerCase().includes(q)).forEach(s=>{
+    const div=document.createElement('div');
+    div.className='session';
+    const users=Object.keys(picks[s.id]||{});
+    const mine=users.includes(currentUser);
+    div.innerHTML=`
+      <div><strong>${s.title}</strong></div>
+      <div class='small'>${s.day} ${s.time} ${s.track}</div>
+      <div style='margin-top:8px'>
+        <button class='${mine?'active':''}' onclick="togglePick('${s.id}')">${mine?'✓ Selected':'Select'}</button>
+      </div>
+      <div style='margin-top:8px'>${users.map(u=>`<span class='pill'>${u}</span>`).join(' ')}</div>
+    `;
+    el.appendChild(div);
+  });
+}
+
+loadSessions();
+listenPicks();
+</script>
+</body>
+</html>
