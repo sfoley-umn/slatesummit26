@@ -507,22 +507,25 @@ async function saveSelection(
 
   try {
 
-    await fetch(SHEET_API, {
+    const formData = new URLSearchParams();
+
+    formData.append('sessionId', sessionId);
+    formData.append('sessionTitle', sessionTitle);
+    formData.append('userName', currentUser);
+    formData.append('selected', selected);
+    formData.append('rating', rating);
+
+    const response = await fetch(SHEET_API, {
 
       method:'POST',
 
-      headers:{
-        'Content-Type':'application/json'
-      },
+      body: formData
 
-      body:JSON.stringify({
-        sessionId,
-        sessionTitle,
-        userName: currentUser,
-        selected,
-        rating
-      })
     });
+
+    const text = await response.text();
+
+    console.log(text);
 
     await loadSelections();
 
@@ -530,12 +533,10 @@ async function saveSelection(
 
     console.error(err);
 
-    alert(
-      'Could not save selection.'
-    );
+    alert('Could not save selection.');
   }
 }
-
+  
 async function togglePick(id){
 
   if(!currentUser){
