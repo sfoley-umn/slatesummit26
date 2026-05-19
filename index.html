@@ -4,61 +4,289 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Summit Team Planner</title>
+
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+
 <style>
-*{box-sizing:border-box} body{font-family:system-ui,-apple-system,sans-serif;margin:0;background:#f5f7fb;color:#1f2937}
-.wrap{max-width:1200px;margin:0 auto;padding:18px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
-.card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:14px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
-.controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.session{margin-bottom:10px}.pill{display:inline-block;background:#eef2ff;color:#4338ca;padding:3px 8px;border-radius:999px;font-size:11px;margin:2px 4px 0 0}
-button{cursor:pointer;padding:7px 10px;border-radius:8px;border:1px solid #d1d5db;background:#fff} button.active{background:#dcfce7;border-color:#22c55e}
-input,select{padding:8px;border-radius:8px;border:1px solid #d1d5db} .small{font-size:12px;color:#6b7280}
-.grid{display:grid;grid-template-columns:2fr 1fr;gap:16px}@media(max-width:900px){.grid{grid-template-columns:1fr}}
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}.stat{padding:10px;border-radius:10px;background:#f9fafb;text-align:center}
-.session-title{font-weight:600;font-size:15px;margin-bottom:4px;cursor:pointer}.meta{font-size:12px;color:#6b7280;margin-bottom:8px}.avatars{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.avatar{background:#e0e7ff;border-radius:999px;padding:4px 8px;font-size:11px}
-.hidden{display:none}
+*{box-sizing:border-box}
+
+body{
+  font-family:system-ui,-apple-system,sans-serif;
+  margin:0;
+  background:#f5f7fb;
+  color:#1f2937;
+}
+
+.wrap{
+  max-width:1400px;
+  margin:0 auto;
+  padding:18px;
+}
+
+.top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  flex-wrap:wrap;
+  margin-bottom:16px;
+}
+
+.card{
+  background:#fff;
+  border:1px solid #e5e7eb;
+  border-radius:12px;
+  padding:14px;
+  box-shadow:0 1px 3px rgba(0,0,0,.05);
+}
+
+.controls{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  align-items:center;
+}
+
+button{
+  cursor:pointer;
+  padding:8px 12px;
+  border-radius:8px;
+  border:1px solid #d1d5db;
+  background:#fff;
+  font-weight:500;
+}
+
+button.active{
+  background:#dcfce7;
+  border-color:#22c55e;
+}
+
+button.rate-btn{
+  min-width:40px;
+}
+
+button.rate-active{
+  background:#dbeafe;
+  border-color:#2563eb;
+}
+
+input,select{
+  padding:8px;
+  border-radius:8px;
+  border:1px solid #d1d5db;
+}
+
+.small{
+  font-size:12px;
+  color:#6b7280;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:2fr 1fr;
+  gap:16px;
+}
+
+@media(max-width:1000px){
+  .grid{
+    grid-template-columns:1fr;
+  }
+}
+
+.stats{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+  margin-bottom:14px;
+}
+
+.stat{
+  padding:10px;
+  border-radius:10px;
+  background:#f9fafb;
+  text-align:center;
+}
+
+.session{
+  margin-bottom:12px;
+}
+
+.session-title{
+  font-weight:600;
+  font-size:15px;
+  margin-bottom:4px;
+}
+
+.meta{
+  font-size:12px;
+  color:#6b7280;
+  margin-bottom:10px;
+}
+
+.avatars{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  margin-top:10px;
+}
+
+.avatar{
+  background:#e0e7ff;
+  border-radius:999px;
+  padding:4px 8px;
+  font-size:11px;
+}
+
+.view-toggle{
+  display:flex;
+  gap:8px;
+  margin-bottom:14px;
+}
+
+.view-btn.active-view{
+  background:#2563eb;
+  color:#fff;
+  border-color:#2563eb;
+}
+
+.team-session{
+  border-bottom:1px solid #eef2f7;
+  padding:10px 0;
+}
+
+.team-session:last-child{
+  border-bottom:none;
+}
+
+.user-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  padding:4px 0;
+}
+
+.rating-pill{
+  background:#eff6ff;
+  color:#1d4ed8;
+  padding:2px 8px;
+  border-radius:999px;
+  font-size:11px;
+}
+
+.action-row{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  align-items:center;
+}
+
+.rating-buttons{
+  display:flex;
+  gap:6px;
+}
+
+.team-count{
+  font-size:12px;
+  color:#4b5563;
+  margin-top:6px;
+}
 </style>
 </head>
+
 <body>
+
 <div class="wrap">
+
   <div class="top">
     <div>
       <h2 style="margin:0">Slate Summit Team Planner</h2>
-      <div class="small">Live summit schedule + shared coworker selections</div>
+      <div class="small">Live summit schedule + shared coworker planning</div>
     </div>
+
     <div id="status" class="small">Loading…</div>
   </div>
 
-  <div class="grid">
-    <div>
-      <div class="card" style="margin-bottom:14px">
-        <div class="controls">
-          <input id="name" placeholder="Your name" />
-          <button onclick="saveName()">Set Name</button>
-          <input id="search" placeholder="Search sessions" oninput="render()" />
-          <select id="dayFilter" onchange="render()"><option value="">All days</option></select>
-        </div>
-      </div>
-      <div id="sessions"></div>
-    </div>
+  <div class="view-toggle">
+    <button id="individualBtn" class="view-btn active-view" onclick="setView('individual')">
+      Individual View
+    </button>
 
-    <div>
-      <div class="card">
-        <h3 style="margin-top:0">Team Summary</h3>
-        <div class="stats">
-          <div class="stat"><div id="statSessions">0</div><div class="small">Sessions</div></div>
-          <div class="stat"><div id="statSelected">0</div><div class="small">My Picks</div></div>
-          <div class="stat"><div id="statPeople">0</div><div class="small">Team Members</div></div>
-        </div>
-        <div id="teamRoster"></div>
-      </div>
-    </div>
+    <button id="teamBtn" class="view-btn" onclick="setView('team')">
+      Team View
+    </button>
   </div>
-</div>
-<script>
-const API_URL='https://slate--partners-technolutions-net.cdn.technolutions.net/portal/public-summit-schedule?cmd=search&cache=900&level=&track=&day=';
 
-const firebaseConfig={
+  <div class="grid">
+
+    <div>
+
+      <div class="card" style="margin-bottom:14px">
+
+        <div class="controls">
+
+          <input id="name" placeholder="Your name" />
+
+          <button onclick="saveName()">Set Name</button>
+
+          <input
+            id="search"
+            placeholder="Search sessions"
+            oninput="render()"
+          />
+
+          <select id="dayFilter" onchange="render()">
+            <option value="">All days</option>
+          </select>
+
+        </div>
+
+      </div>
+
+      <div id="sessions"></div>
+
+    </div>
+
+    <div>
+
+      <div class="card">
+
+        <h3 style="margin-top:0">Team Summary</h3>
+
+        <div class="stats">
+          <div class="stat">
+            <div id="statSessions">0</div>
+            <div class="small">Sessions</div>
+          </div>
+
+          <div class="stat">
+            <div id="statSelected">0</div>
+            <div class="small">My Picks</div>
+          </div>
+
+          <div class="stat">
+            <div id="statPeople">0</div>
+            <div class="small">Team Members</div>
+          </div>
+        </div>
+
+        <div id="teamRoster"></div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+
+const API_URL =
+'https://slate--partners-technolutions-net.cdn.technolutions.net/portal/public-summit-schedule?cmd=search&cache=900&level=&track=&day=';
+
+const firebaseConfig = {
   apiKey:'AIzaSyCfipy-czbudi0lJdSwhin6wyl2s_qEiro',
   authDomain:'slatesummit26.firebaseapp.com',
   databaseURL:'https://slatesummit26-default-rtdb.firebaseio.com',
@@ -67,52 +295,379 @@ const firebaseConfig={
   messagingSenderId:'574078814775',
   appId:'1:574078814775:web:9e6b9efe006129e8b0cdb2'
 };
+
 firebase.initializeApp(firebaseConfig);
-const db=firebase.database();
 
-let currentUser=localStorage.getItem('summitUser')||'';
-let sessions=[];
-let picks={};
-if(currentUser) document.getElementById('name').value=currentUser;
+const db = firebase.database();
 
-function saveName(){ currentUser=document.getElementById('name').value.trim(); localStorage.setItem('summitUser',currentUser); render(); }
-function safe(v){ return String(v||'').replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])); }
-function initials(n){ return n.split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase(); }
+let currentUser = localStorage.getItem('summitUser') || '';
+let currentView = 'individual';
 
-async function loadSessions(){
-  try{
-    const res=await fetch(API_URL);
-    const txt=await res.text();
-    const doc=new DOMParser().parseFromString(txt,'text/html');
-    const table=doc.querySelector('table');
-    const rows=[...table.querySelectorAll('tbody tr')];
-    const headers=[...table.querySelectorAll('thead th')].map(th=>th.textContent.trim());
-    sessions=rows.map((tr,i)=>{ const obj={}; [...tr.children].forEach((td,j)=>obj[headers[j]]=td.textContent.trim()); return {id:'s'+i,title:obj['Session Title']||Object.values(obj)[0],day:obj['Day']||'',time:obj['Time']||'',track:obj['Track']||'',raw:obj}; });
-    const days=[...new Set(sessions.map(s=>s.day).filter(Boolean))];
-    const dayFilter=document.getElementById('dayFilter'); days.forEach(d=>{ const o=document.createElement('option'); o.value=d; o.textContent=d; dayFilter.appendChild(o); });
-    document.getElementById('status').textContent=`Loaded ${sessions.length} live sessions`;
-  }catch(e){ document.getElementById('status').textContent='Could not load live sessions'; }
+let sessions = [];
+let picks = {};
+
+if(currentUser){
+  document.getElementById('name').value = currentUser;
+}
+
+function saveName(){
+  currentUser = document.getElementById('name').value.trim();
+
+  localStorage.setItem('summitUser', currentUser);
+
   render();
 }
-function listenPicks(){ db.ref('summit2026').on('value',snap=>{ picks=snap.val()||{}; render(); }); }
-function togglePick(id){ if(!currentUser){ alert('Set your name first'); return; } const path=`summit2026/${id}/${currentUser.replace(/[.#$\[\]]/g,'_')}`; const existing=picks?.[id]?.[currentUser.replace(/[.#$\[\]]/g,'_')]; db.ref(path).set(existing?null:true); }
-function render(){
-  const q=document.getElementById('search').value.toLowerCase(); const day=document.getElementById('dayFilter').value;
-  const filtered=sessions.filter(s=>(!q||safe(s.title).toLowerCase().includes(q))&&(!day||s.day===day));
-  document.getElementById('statSessions').textContent=sessions.length;
-  document.getElementById('statSelected').textContent=currentUser?filtered.filter(s=>picks?.[s.id]?.[currentUser.replace(/[.#$\[\]]/g,'_')]).length:0;
-  const allUsers=[...new Set(Object.values(picks).flatMap(x=>Object.keys(x||{})))];
-  document.getElementById('statPeople').textContent=allUsers.length;
-  document.getElementById('teamRoster').innerHTML=allUsers.length?allUsers.map(u=>`<div class='small'>• ${u}</div>`).join(''):'<div class="small">No selections yet</div>';
-  const el=document.getElementById('sessions'); el.innerHTML='';
-  filtered.forEach(s=>{
-    const users=Object.keys(picks[s.id]||{}); const myKey=currentUser.replace(/[.#$\[\]]/g,'_'); const mine=users.includes(myKey);
-    const div=document.createElement('div'); div.className='card session';
-    div.innerHTML=`<div class='session-title'>${safe(s.title)}</div><div class='meta'>${safe(s.day)} ${safe(s.time)} ${safe(s.track)}</div><button class='${mine?'active':''}' onclick="togglePick('${s.id}')">${mine?'✓ Selected':'Select session'}</button><div class='avatars'>${users.map(u=>`<span class='avatar'>${u}</span>`).join('')}</div>`;
-    el.appendChild(div);
+
+function safe(v){
+  return String(v || '')
+    .replace(/[&<>]/g,m => ({
+      '&':'&amp;',
+      '<':'&lt;',
+      '>':'&gt;'
+    }[m]));
+}
+
+function sanitizeUser(name){
+  return name.replace(/[.#$\[\]]/g,'_');
+}
+
+function setView(view){
+
+  currentView = view;
+
+  document.getElementById('individualBtn')
+    .classList.toggle('active-view', view === 'individual');
+
+  document.getElementById('teamBtn')
+    .classList.toggle('active-view', view === 'team');
+
+  render();
+}
+
+async function loadSessions(){
+
+  try{
+
+    const res = await fetch(API_URL);
+
+    const txt = await res.text();
+
+    const doc = new DOMParser()
+      .parseFromString(txt,'text/html');
+
+    const table = doc.querySelector('table');
+
+    const rows = [...table.querySelectorAll('tbody tr')];
+
+    const headers = [...table.querySelectorAll('thead th')]
+      .map(th => th.textContent.trim());
+
+    sessions = rows.map((tr,i)=>{
+
+      const obj = {};
+
+      [...tr.children].forEach((td,j)=>{
+        obj[headers[j]] = td.textContent.trim();
+      });
+
+      return {
+        id:'s'+i,
+        title:obj['Session Title'] || Object.values(obj)[0],
+        day:obj['Day'] || '',
+        time:obj['Time'] || '',
+        track:obj['Track'] || '',
+        raw:obj
+      };
+    });
+
+    const days = [
+      ...new Set(
+        sessions.map(s => s.day).filter(Boolean)
+      )
+    ];
+
+    const dayFilter = document.getElementById('dayFilter');
+
+    days.forEach(d => {
+
+      const o = document.createElement('option');
+
+      o.value = d;
+      o.textContent = d;
+
+      dayFilter.appendChild(o);
+    });
+
+    document.getElementById('status')
+      .textContent = `Loaded ${sessions.length} live sessions`;
+
+  }catch(e){
+
+    document.getElementById('status')
+      .textContent = 'Could not load live sessions';
+  }
+
+  render();
+}
+
+function listenPicks(){
+
+  db.ref('summit2026').on('value',snap=>{
+
+    picks = snap.val() || {};
+
+    render();
   });
 }
-loadSessions(); listenPicks();
+
+function togglePick(id){
+
+  if(!currentUser){
+    alert('Set your name first');
+    return;
+  }
+
+  const key = sanitizeUser(currentUser);
+
+  const existing = picks?.[id]?.[key]?.selected;
+
+  db.ref(`summit2026/${id}/${key}/selected`)
+    .set(existing ? null : true);
+}
+
+function setRating(id, rating){
+
+  if(!currentUser){
+    alert('Set your name first');
+    return;
+  }
+
+  const key = sanitizeUser(currentUser);
+
+  db.ref(`summit2026/${id}/${key}/rating`)
+    .set(rating);
+}
+
+function getAllUsers(){
+
+  return [
+    ...new Set(
+      Object.values(picks)
+        .flatMap(x => Object.keys(x || {}))
+    )
+  ];
+}
+
+function render(){
+
+  const q = document.getElementById('search')
+    .value
+    .toLowerCase();
+
+  const day = document.getElementById('dayFilter').value;
+
+  const filtered = sessions.filter(s => {
+
+    const matchSearch =
+      !q ||
+      safe(s.title).toLowerCase().includes(q);
+
+    const matchDay =
+      !day ||
+      s.day === day;
+
+    return matchSearch && matchDay;
+  });
+
+  const allUsers = getAllUsers();
+
+  document.getElementById('statSessions')
+    .textContent = sessions.length;
+
+  const myKey = sanitizeUser(currentUser);
+
+  const mySelections = filtered.filter(
+    s => picks?.[s.id]?.[myKey]?.selected
+  ).length;
+
+  document.getElementById('statSelected')
+    .textContent = mySelections;
+
+  document.getElementById('statPeople')
+    .textContent = allUsers.length;
+
+  document.getElementById('teamRoster').innerHTML =
+    allUsers.length
+      ? allUsers.map(u =>
+          `<div class='small'>• ${u}</div>`
+        ).join('')
+      : '<div class="small">No selections yet</div>';
+
+  const el = document.getElementById('sessions');
+
+  el.innerHTML = '';
+
+  if(currentView === 'individual'){
+
+    filtered.forEach(s => {
+
+      const sessionUsers = picks[s.id] || {};
+
+      const mine = sessionUsers?.[myKey]?.selected;
+
+      const myRating = sessionUsers?.[myKey]?.rating || 0;
+
+      const selectedUsers = Object.entries(sessionUsers)
+        .filter(([_,v]) => v.selected);
+
+      const div = document.createElement('div');
+
+      div.className = 'card session';
+
+      div.innerHTML = `
+        <div class='session-title'>
+          ${safe(s.title)}
+        </div>
+
+        <div class='meta'>
+          ${safe(s.day)}
+          ${safe(s.time)}
+          ${safe(s.track)}
+        </div>
+
+        <div class='action-row'>
+
+          <button
+            class='${mine ? 'active' : ''}'
+            onclick="togglePick('${s.id}')"
+          >
+            ${mine ? '✓ Selected' : 'Select Session'}
+          </button>
+
+          <div class='rating-buttons'>
+            ${[1,2,3,4,5].map(r => `
+              <button
+                class='rate-btn ${myRating === r ? 'rate-active' : ''}'
+                onclick="setRating('${s.id}', ${r})"
+              >
+                ${r}
+              </button>
+            `).join('')}
+          </div>
+
+        </div>
+
+        <div class='team-count'>
+          ${selectedUsers.length} team member(s) attending
+        </div>
+
+        <div class='avatars'>
+          ${selectedUsers.map(([u,v]) => `
+            <span class='avatar'>
+              ${u}
+              ${v.rating ? `(${v.rating}/5)` : ''}
+            </span>
+          `).join('')}
+        </div>
+      `;
+
+      el.appendChild(div);
+    });
+
+  } else {
+
+    const selectedSessions = filtered.filter(s => {
+
+      const sessionUsers = picks[s.id] || {};
+
+      return Object.values(sessionUsers)
+        .some(v => v.selected);
+    });
+
+    selectedSessions
+      .sort((a,b) => {
+
+        const aCount = Object.values(picks[a.id] || {})
+          .filter(v => v.selected).length;
+
+        const bCount = Object.values(picks[b.id] || {})
+          .filter(v => v.selected).length;
+
+        return bCount - aCount;
+      });
+
+    selectedSessions.forEach(s => {
+
+      const sessionUsers = picks[s.id] || {};
+
+      const selectedUsers = Object.entries(sessionUsers)
+        .filter(([_,v]) => v.selected);
+
+      const avgRating = selectedUsers.length
+        ? (
+            selectedUsers.reduce((sum,[_,v]) =>
+              sum + (v.rating || 0), 0
+            ) / selectedUsers.length
+          ).toFixed(1)
+        : '-';
+
+      const div = document.createElement('div');
+
+      div.className = 'card session';
+
+      div.innerHTML = `
+        <div class='session-title'>
+          ${safe(s.title)}
+        </div>
+
+        <div class='meta'>
+          ${safe(s.day)}
+          ${safe(s.time)}
+          ${safe(s.track)}
+        </div>
+
+        <div class='team-count'>
+          ${selectedUsers.length} attending • Avg Rating: ${avgRating}/5
+        </div>
+
+        <div class='team-session'>
+
+          ${selectedUsers.map(([u,v]) => `
+            <div class='user-row'>
+
+              <div>${u}</div>
+
+              <div class='rating-pill'>
+                ${v.rating ? `${v.rating}/5` : 'No rating'}
+              </div>
+
+            </div>
+          `).join('')}
+
+        </div>
+      `;
+
+      el.appendChild(div);
+    });
+
+    if(!selectedSessions.length){
+
+      el.innerHTML = `
+        <div class="card">
+          <div class="small">
+            No team selections yet.
+          </div>
+        </div>
+      `;
+    }
+  }
+}
+
+loadSessions();
+
+listenPicks();
+
 </script>
+
 </body>
 </html>
