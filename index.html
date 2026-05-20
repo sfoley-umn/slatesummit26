@@ -7,6 +7,11 @@
 <title>Slate Summit 2026 Session Planner</title>
 
 <style>
+:root {
+  --day-top: 180px;
+  --time-top: 240px;
+}
+
 *{box-sizing:border-box;margin:0;padding:0}
 
 body{
@@ -116,14 +121,16 @@ select:focus,input:focus{
   display:flex;
   align-items:center;
   gap:10px;
-  margin-bottom:18px;
-  padding:10px 0 14px;
+  /* Replaced margin with padding so the solid background hides scrolling elements */
+  padding:10px 0 24px;
+  margin-bottom:0;
   flex-wrap:wrap
 }
 
 .view-tabs{
   display:flex;
   gap:8px;
+  width:100%; /* Forces the tabs onto their own row */
   margin-bottom:0
 }
 
@@ -240,7 +247,7 @@ select:focus,input:focus{
 
 .day-header{
   position:sticky;
-  top:126px;
+  top:var(--day-top); /* Dynamic offset */
   z-index:20;
   background:#f3f4f6;
   padding:8px 0 12px;
@@ -257,7 +264,7 @@ select:focus,input:focus{
 
 .time-pill{
   position:sticky;
-  top:176px;
+  top:var(--time-top); /* Dynamic offset */
   z-index:15;
   display:inline-flex;
   align-items:center;
@@ -446,7 +453,6 @@ select:focus,input:focus{
   font-weight:700
 }
 
-/* Explicit Add/Remove Button */
 .pick-btn{
   padding: 6px 12px;
   border-radius: 6px;
@@ -462,7 +468,7 @@ select:focus,input:focus{
   font-size: 13px;
   transition: all .15s;
   white-space: nowrap;
-  width: 220px; /* Lock width so it doesn't jump */
+  width: 220px;
 }
 
 .pick-btn:hover{
@@ -567,12 +573,28 @@ select:focus,input:focus{
         oninput="render()"
       >
 
-      <select id="dayFilter" onchange="render()" style="width:auto;min-width:160px">
+      <select id="dayFilter" onchange="render()" style="width:auto;min-width:130px">
         <option value="">All days</option>
       </select>
 
-      <select id="timeFilter" onchange="render()" style="width:auto;min-width:140px">
+      <select id="timeFilter" onchange="render()" style="width:auto;min-width:110px">
         <option value="">All times</option>
+      </select>
+
+      <select id="statusFilter" onchange="render()" style="width:auto;min-width:140px">
+        <option value="">All statuses</option>
+        <option value="sel">Selected</option>
+        <option value="unsel">Not Selected</option>
+      </select>
+
+      <select id="ratingFilter" onchange="render()" style="width:auto;min-width:130px">
+        <option value="">All ratings</option>
+        <option value="5">5 Stars</option>
+        <option value="4">4 Stars</option>
+        <option value="3">3 Stars</option>
+        <option value="2">2 Stars</option>
+        <option value="1">1 Star</option>
+        <option value="unrated">Unrated</option>
       </select>
       
       <label class="checkbox-lbl" id="showHiddenWrap" style="display:none;">
@@ -653,6 +675,24 @@ const esc=s=>String(s||'').replace(/[&<>]/g,m=>({
   '<':'&lt;',
   '>':'&gt;'
 }[m]));
+
+// DYNAMIC STICKY HEIGHT CALCULATOR
+window.addEventListener('resize', updateStickyOffsets);
+
+function updateStickyOffsets() {
+  const fb = document.querySelector('.filter-bar');
+  if (fb) {
+    // 61px is the height of the fixed top navigation bar
+    const offset = 61 + fb.offsetHeight;
+    document.documentElement.style.setProperty('--day-top', offset + 'px');
+    
+    // Calculate the height of the day-header to place the time-pill directly below it
+    const dh = document.querySelector('.day-header');
+    const dhHeight = dh ? dh.offsetHeight : 46; 
+    // Add 14px to account for the margin-bottom of the day-header
+    document.documentElement.style.setProperty('--time-top', (offset + dhHeight + 14) + 'px');
+  }
+}
 
 function parseDay(dayStr){
   const d=new Date(dayStr);
@@ -751,7 +791,6 @@ async function loadSessions(){
          rawSession = Object.values(obj).reduce((a, b) => ((a||'').length > (b||'').length ? a : b), '');
       }
 
-      // Check if data is smushed, and reliably split it using exact Slate headers
       const splitRegex = /(Level:|Track:|Session Details|Description|Presenter\(s\):?|Presenters?:?)/i;
       
       let parts = rawSession.split(splitRegex);
@@ -761,7 +800,6 @@ async function loadSessions(){
       let details = obj['Session Details'] || obj['Description'] || '';
       let presenters = obj['Presenter'] || obj['Presenters'] || obj['Presenter(s)'] || '';
 
-      // Cycle through parts and assign them based on the preceding header match
       for (let k = 1; k < parts.length; k += 2) {
           let key = parts[k].toLowerCase();
           let val = (parts[k+1] || '').trim();
@@ -982,7 +1020,6 @@ function generateCard(s, viewType){
   let attendees = [];
   let rated = [];
 
-  // Identify attendance/ratings for team tab vs others
   if(viewType === 'team'){
     const allEntries = Object.entries(picks[s.id]||{});
     attendees = allEntries.filter(([_,v])=>v.selected);
@@ -994,12 +1031,10 @@ function generateCard(s, viewType){
     if(mine) cardClass += " attending";
   }
 
-  // ONLY apply hidden styling on the Session Planner view
   if(isHidden && viewType === 'planner') {
     cardClass += " hidden-card";
   }
 
-  // Generate explicit buttons for ALL views
   let pickBtnHTML = `
     <button class="pick-btn${mine?' selected':''}" onclick="togglePick('${s.id}')">
       <i class="ti ${mine?'ti-check':'ti-calendar-plus'}"></i>
@@ -1081,6 +1116,8 @@ function render(){
   const sq=q('search').value.toLowerCase();
   const day=q('dayFilter').value;
   const time=q('timeFilter').value;
+  const status=q('statusFilter').value;
+  const ratingFilter=q('ratingFilter').value;
 
   const showHiddenWrap = q('showHiddenWrap');
   if(currentView === 'planner' && currentUser){
@@ -1094,19 +1131,32 @@ function render(){
     .filter(v => v && v !== '__new__')
     .sort();
 
-  let base=sessions.filter(s=>
-    (!sq||s.title.toLowerCase().includes(sq)) &&
-    (!day||s.day===day) &&
-    (!time||s.time===time)
-  ).sort((a,b)=>{
+  let base=sessions.filter(s=>{
+    if(sq&&!s.title.toLowerCase().includes(sq)) return false;
+    if(day&&s.day!==day) return false;
+    if(time&&s.time!==time) return false;
+
+    if(currentUser) {
+      const myPick = picks?.[s.id]?.[currentUser] || {};
+      const isSel = myPick.selected;
+      const myRatingVal = myPick.rating || 0;
+      
+      if(status) {
+        if(status === 'sel' && !isSel) return false;
+        if(status === 'unsel' && isSel) return false;
+      }
+
+      if(ratingFilter) {
+        if(ratingFilter === 'unrated' && myRatingVal !== 0) return false;
+        if(ratingFilter !== 'unrated' && myRatingVal !== parseInt(ratingFilter)) return false;
+      }
+    }
+
+    return true;
+  }).sort((a,b)=>{
     const dayDiff=parseDay(a.day)-parseDay(b.day);
     return dayDiff || (parseTime(a.time)-parseTime(b.time));
   });
-
-  // Filter out hidden sessions ONLY on the planner unless "Show Hidden" is checked
-  if(currentView === 'planner' && currentUser && !q('showHidden').checked) {
-    base = base.filter(s => !(picks?.[s.id]?.[currentUser]?.hidden));
-  }
 
   q('statTotal').textContent=sessions.length||'—';
   q('statMine').textContent=sessions.filter(s=>picks?.[s.id]?.[currentUser]?.selected).length;
@@ -1134,21 +1184,36 @@ function render(){
         Loading…
       </div>
     `;
+    setTimeout(updateStickyOffsets, 0);
     return;
   }
 
   if(currentView==='planner'){
+    if(currentUser && !q('showHidden').checked) {
+      base = base.filter(s => !(picks?.[s.id]?.[currentUser]?.hidden));
+    }
     feed.innerHTML=renderGrouped(base,plannerCard);
+    
   }else if(currentView==='mine'){
     if(!currentUser){
       feed.innerHTML=`<div class="empty">Select your name to see your picks</div>`;
+      setTimeout(updateStickyOffsets, 0);
       return;
     }
-    const mine=base.filter(s=>picks?.[s.id]?.[currentUser]?.selected);
-    feed.innerHTML=renderGrouped(mine,mineCard);
-    if(!mine.length){
-      feed.innerHTML=`<div class="empty">You haven't picked any sessions yet</div>`;
+    
+    let mineList = base;
+    if (!status && !ratingFilter) {
+       mineList = base.filter(s => {
+         const myPick = picks?.[s.id]?.[currentUser] || {};
+         return myPick.selected || myPick.rating > 0;
+       });
     }
+
+    feed.innerHTML=renderGrouped(mineList,mineCard);
+    if(!mineList.length){
+      feed.innerHTML=`<div class="empty">You haven't picked or rated any sessions yet</div>`;
+    }
+    
   }else if(currentView==='team'){
     const team=base.filter(s=>{
       const vals=Object.values(picks[s.id]||{});
@@ -1159,6 +1224,9 @@ function render(){
       feed.innerHTML=`<div class="empty">No team activity yet</div>`;
     }
   }
+
+  // Calculate sticky offset heights after the DOM is rendered
+  setTimeout(updateStickyOffsets, 0);
 }
 
 loadSessions();
