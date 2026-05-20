@@ -4,443 +4,1165 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-<title>Summit Team Planner</title>
+<title>Slate Summit 2026 Session Planner</title>
 
 <style>
-*{box-sizing:border-box}
+*{box-sizing:border-box;margin:0;padding:0}
 
 body{
-  margin:0;
-  font-family:system-ui,-apple-system,sans-serif;
-  background:#f6f7fb;
+  font-family:var(--font-sans,system-ui,sans-serif);
+  background:#f3f4f6;
   color:#111827;
+  min-height:100vh
 }
 
-/* Header */
-.top{
-  background:linear-gradient(90deg,#7a0019,#9b0a2a);
-  color:white;
+/* PERSISTENT TOP BAR */
+.topbar{
+  position:sticky;
+  top:0;
+  z-index:100;
+  background:#0f172a;
+  color:#fff;
+  padding:14px 20px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  border-bottom:1px solid rgba(255,255,255,.08);
+  box-shadow:0 2px 8px rgba(0,0,0,.12);
+  height: 61px;
+}
+
+.topbar h1{
+  font-size:15px;
+  font-weight:600
+}
+
+.topbar .sub{
+  font-size:12px;
+  color:#cbd5e1;
+  margin-left:auto
+}
+
+.layout{
+  display:grid;
+  grid-template-columns:1fr 300px;
+  gap:18px;
   padding:18px;
-  border-bottom:4px solid rgba(255,255,255,.1);
+  max-width:1550px;
+  margin:0 auto
 }
 
-.wrap{
-  max-width:1400px;
-  margin:0 auto;
-  padding:18px;
+@media(max-width:900px){
+  .layout{
+    grid-template-columns:1fr
+  }
 }
 
-/* Cards */
-.card{
+/* PERSISTENT RIGHT HAND MENU */
+.sidebar{
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+  position:sticky;
+  top:80px;
+  align-self:start;
+  max-height:calc(100vh - 100px);
+  overflow-y:auto;
+}
+
+.sidebar::-webkit-scrollbar {
+  width:0px;
+}
+
+.panel{
   background:#fff;
   border:1px solid #e5e7eb;
-  border-radius:14px;
-  padding:14px;
-  box-shadow:0 2px 8px rgba(0,0,0,.05);
-  margin-bottom:12px;
+  border-radius:16px;
+  padding:16px
 }
 
-/* Controls */
-.controls{
-  display:flex;
-  flex-wrap:wrap;
-  gap:10px;
-  align-items:center;
+.panel-title{
+  font-size:11px;
+  font-weight:700;
+  color:#64748b;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  margin-bottom:10px
 }
 
-input,select{
-  padding:8px 10px;
-  border-radius:10px;
-  border:1px solid #d1d5db;
-  background:white;
-}
-
-/* Buttons */
-button{
-  cursor:pointer;
-  padding:8px 12px;
-  border-radius:10px;
+select,input[type=text]{
+  width:100%;
+  padding:11px 12px;
+  border-radius:12px;
   border:1px solid #d1d5db;
   background:#fff;
-  font-weight:500;
+  color:#111827;
+  font-size:14px;
+  font-family:inherit
 }
 
-button.active{
-  background:#dcfce7;
-  border-color:#22c55e;
+select:focus,input:focus{
+  outline:none;
+  border-color:#0f6ea8;
+  box-shadow:0 0 0 3px rgba(15,110,168,.15)
 }
 
-/* Layout */
-.grid{
-  display:grid;
-  grid-template-columns:2fr 1fr;
-  gap:16px;
+/* STICKY FILTER BAR */
+.filter-bar{
+  position:sticky;
+  top:61px;
+  z-index:90;
+  background:#f3f4f6;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom:18px;
+  padding:10px 0 14px;
+  flex-wrap:wrap
 }
 
-@media(max-width:1000px){
-  .grid{grid-template-columns:1fr}
+.view-tabs{
+  display:flex;
+  gap:8px;
+  margin-bottom:0
 }
 
-/* Stats */
-.stats{
+.tab{
+  flex:1;
+  padding:10px 12px;
+  border-radius:12px;
+  border:1px solid #d1d5db;
+  background:#fff;
+  color:#475569;
+  font-size:13px;
+  font-weight:600;
+  cursor:pointer;
+  text-align:center;
+  white-space:nowrap;
+  transition:all .15s
+}
+
+.tab.active{
+  background:#0f6ea8;
+  color:#fff;
+  border-color:#0f6ea8
+}
+
+.checkbox-lbl{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  font-size:13px;
+  color:#475569;
+  cursor:pointer;
+  white-space:nowrap;
+  margin-left:auto;
+}
+
+.checkbox-lbl input{
+  width:auto;
+  padding:0;
+  margin:0;
+  cursor:pointer
+}
+
+.stat-grid{
   display:grid;
   grid-template-columns:repeat(3,1fr);
   gap:10px;
+  margin-bottom:14px
 }
 
 .stat{
-  background:#f9fafb;
-  padding:10px;
-  border-radius:10px;
+  background:#f8fafc;
+  border-radius:12px;
+  padding:12px;
   text-align:center;
+  border:1px solid #e5e7eb
 }
 
-/* Session grouping */
-.day-header{
-  margin:18px 0 10px;
+.stat-num{
+  font-size:22px;
   font-weight:700;
-  font-size:16px;
-  color:#7a0019;
+  color:#0f172a
 }
 
-.time-header{
-  margin:10px 0;
-  font-weight:600;
-  font-size:13px;
-  color:#374151;
+.stat-lbl{
+  font-size:11px;
+  color:#64748b;
+  margin-top:3px
 }
 
-/* Session card */
-.session-title{
-  font-weight:700;
-  margin-bottom:4px;
-}
-
-.meta{
-  font-size:12px;
-  color:#6b7280;
-  margin-bottom:10px;
-}
-
-.avatars{
+.roster-item{
   display:flex;
-  flex-wrap:wrap;
-  gap:6px;
-  margin-top:8px;
+  align-items:center;
+  gap:10px;
+  padding:8px 0;
+  border-bottom:1px solid #f1f5f9
+}
+
+.roster-item:last-child{
+  border-bottom:none
 }
 
 .avatar{
-  font-size:11px;
-  padding:3px 8px;
-  border-radius:999px;
-  background:#e0e7ff;
-}
-
-/* View toggle */
-.view-toggle{
+  width:30px;
+  height:30px;
+  border-radius:50%;
+  background:#dbeafe;
   display:flex;
-  gap:10px;
-  margin:12px 0;
+  align-items:center;
+  justify-content:center;
+  font-size:12px;
+  font-weight:700;
+  color:#1d4ed8;
+  flex-shrink:0
 }
 
-.view-btn.active-view{
-  background:#7a0019;
-  color:white;
-  border-color:#7a0019;
+.roster-name{
+  font-size:14px
 }
 
-.small{font-size:12px;color:#6b7280}
+.roster-count{
+  font-size:11px;
+  color:#64748b;
+  margin-left:auto
+}
+
+.main{
+  min-width:0
+}
+
+/* PERSIST DATE AND TIME HEADERS */
+.day-block{
+  margin-bottom:34px
+}
+
+.day-header{
+  position:sticky;
+  top:126px;
+  z-index:20;
+  background:#f3f4f6;
+  padding:8px 0 12px;
+  margin-bottom:14px;
+  border-bottom:2px solid #dbeafe;
+  font-size:22px;
+  font-weight:700;
+  color:#0f172a
+}
+
+.time-section{
+  margin-bottom:18px
+}
+
+.time-pill{
+  position:sticky;
+  top:176px;
+  z-index:15;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  font-size:12px;
+  font-weight:700;
+  color:#92400e;
+  background:#fef3c7;
+  border:1px solid #fde68a;
+  padding:6px 12px;
+  border-radius:999px;
+  margin-bottom:10px;
+  box-shadow:0 1px 3px rgba(0,0,0,.08)
+}
+
+.time-pill i{
+  font-size:13px
+}
+
+/* SESSION CARD */
+.session-card{
+  background:#fff;
+  border:1px solid #e5e7eb;
+  border-radius:14px;
+  padding:16px 18px;
+  margin-bottom:12px;
+  transition:all .15s ease;
+  box-shadow:0 1px 2px rgba(0,0,0,.03)
+}
+
+.session-card:hover{
+  border-color:#cbd5e1;
+  box-shadow:0 3px 10px rgba(0,0,0,.05)
+}
+
+.session-card.attending{
+  border-left:6px solid #0f6ea8;
+  background:#f8fbff
+}
+
+.session-card.rated{
+  border-left:6px solid #f59e0b
+}
+
+.session-card.hidden-card{
+  opacity: 0.6;
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+}
+
+.session-top{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:14px;
+  margin-bottom: 12px;
+}
+
+.session-title{
+  font-size:18px;
+  font-weight:600;
+  line-height:1.35;
+  color:#0f172a;
+  margin-bottom: 4px;
+}
+
+.session-level{
+  font-size: 13px;
+  color: #475569;
+  font-weight: 500;
+}
+
+.card-actions{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-shrink: 0;
+}
+
+.text-action-btn{
+  border:none;
+  background:none;
+  cursor:pointer;
+  color:#64748b;
+  font-size:12px;
+  font-weight:600;
+  display:flex;
+  align-items:center;
+  gap:4px;
+  padding:6px 8px;
+  border-radius: 6px;
+  transition: all .15s;
+}
+
+.text-action-btn:hover{
+  background: #f1f5f9;
+  color:#0f172a;
+}
+
+.expand-btn{
+  border:none;
+  background:none;
+  cursor:pointer;
+  color:#0f6ea8;
+  font-size:13px;
+  font-weight:600;
+  padding:6px 0;
+  margin-top: 4px;
+}
+
+.expand-btn:hover{
+  text-decoration: underline;
+}
+
+.session-details{
+  margin-top:14px;
+  padding-top:14px;
+  border-top:1px solid #f1f5f9;
+  display:none;
+  font-size: 14px;
+  color: #334155;
+  line-height: 1.5;
+}
+
+.session-details.open{
+  display:block
+}
+
+.session-meta{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  margin-bottom:12px
+}
+
+.meta-pill{
+  font-size:12px;
+  padding:5px 10px;
+  border-radius:999px;
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  white-space:nowrap;
+  font-weight:600
+}
+
+.pill-loc{
+  background:#dcfce7;
+  color:#166534
+}
+
+.attending-group{
+  margin-top: 12px;
+}
+
+.group-label{
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:#64748b;
+  margin-bottom:8px
+}
+
+.team-row{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px
+}
+
+.attendee-chip{
+  font-size:11px;
+  padding:5px 9px;
+  border-radius:999px;
+  background:#dbeafe;
+  color:#1d4ed8;
+  font-weight:700
+}
+
+.rating-chip{
+  font-size:11px;
+  padding:5px 9px;
+  border-radius:999px;
+  background:#fef3c7;
+  color:#92400e;
+  font-weight:700
+}
+
+/* Explicit Add/Remove Button */
+.pick-btn{
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  background: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: #475569;
+  font-weight: 600;
+  font-size: 13px;
+  transition: all .15s;
+  white-space: nowrap;
+  width: 220px; /* Lock width so it doesn't jump */
+}
+
+.pick-btn:hover{
+  border-color: #0f6ea8;
+  color: #0f6ea8;
+  background: #f8fbff;
+}
+
+.pick-btn.selected{
+  background: #0f6ea8;
+  border-color: #0f6ea8;
+  color: #fff;
+}
+
+.pick-btn i{
+  font-size: 16px;
+}
+
+.stars{
+  display:flex;
+  gap:2px;
+}
+
+.star{
+  font-size:18px;
+  cursor:pointer;
+  color:#e2e8f0;
+  line-height:1;
+  background:none;
+  border:none;
+  padding:1px;
+  transition:color .1s
+}
+
+.star.lit{
+  color:#f59e0b
+}
+
+.star:hover{
+  color:#fbbf24
+}
+
+.empty{
+  text-align:center;
+  padding:50px 20px;
+  color:#64748b;
+  font-size:14px
+}
+
+.loading-msg{
+  text-align:center;
+  padding:32px;
+  color:#64748b;
+  font-size:14px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px
+}
+
+.spinner{
+  width:16px;
+  height:16px;
+  border:2px solid #d1d5db;
+  border-top-color:#0f6ea8;
+  border-radius:50%;
+  animation:spin .6s linear infinite
+}
+
+@keyframes spin{
+  to{transform:rotate(360deg)}
+}
 </style>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css">
 </head>
 
 <body>
 
-<div class="top">
-  <h2 style="margin:0">Slate Summit Team Planner</h2>
-  <div class="small" style="color:#f3f4f6">Live summit schedule + team planning</div>
+<div class="topbar">
+  <h1>Slate Summit 2026 Session Planner</h1>
+  <div class="sub" id="loadStatus">Loading…</div>
 </div>
 
-<div class="wrap">
+<div class="layout">
 
-  <div class="view-toggle">
-    <button id="individualBtn" class="view-btn active-view" onclick="setView('individual')">
-      Individual
-    </button>
-    <button id="teamBtn" class="view-btn" onclick="setView('team')">
-      Team
-    </button>
-  </div>
+  <div class="main">
 
-  <div class="grid">
+    <div class="filter-bar">
 
-    <!-- LEFT -->
-    <div>
-
-      <div class="card">
-        <div class="controls">
-
-          <!-- NAME DROPDOWN -->
-          <select id="name" onchange="saveName()">
-            <option value="">Select name</option>
-            <option>Austin</option>
-            <option>Elma</option>
-            <option>Kelsey</option>
-            <option>Kristin</option>
-            <option>Sean</option>
-          </select>
-
-          <input id="search" placeholder="Search sessions" oninput="render()" />
-
-          <select id="dayFilter" onchange="render()">
-            <option value="">All days</option>
-          </select>
-
-          <select id="timeFilter" onchange="render()">
-            <option value="">All times</option>
-          </select>
-
-        </div>
+      <div class="view-tabs">
+        <button class="tab active" id="tabPlanner" onclick="setView('planner')">Session Planner</button>
+        <button class="tab" id="tabMine" onclick="setView('mine')">My Schedule</button>
+        <button class="tab" id="tabTeam" onclick="setView('team')">Team Schedule</button>
       </div>
 
-      <div id="sessions"></div>
+      <input
+        type="text"
+        id="search"
+        placeholder="Search sessions…"
+        style="flex:1;min-width:160px"
+        oninput="render()"
+      >
+
+      <select id="dayFilter" onchange="render()" style="width:auto;min-width:160px">
+        <option value="">All days</option>
+      </select>
+
+      <select id="timeFilter" onchange="render()" style="width:auto;min-width:140px">
+        <option value="">All times</option>
+      </select>
+      
+      <label class="checkbox-lbl" id="showHiddenWrap" style="display:none;">
+        <input type="checkbox" id="showHidden" onchange="render()">
+        Show hidden
+      </label>
 
     </div>
 
-    <!-- RIGHT -->
-    <div>
+    <div id="feed">
+      <div class="loading-msg">
+        <div class="spinner"></div>
+        Fetching sessions…
+      </div>
+    </div>
 
-      <div class="card">
-        <h3 style="margin-top:0">Team Summary</h3>
+  </div>
 
-        <div class="stats">
-          <div class="stat">
-            <div id="statSessions">0</div>
-            <div class="small">Sessions</div>
-          </div>
-          <div class="stat">
-            <div id="statSelected">0</div>
-            <div class="small">My Picks</div>
-          </div>
-          <div class="stat">
-            <div id="statPeople">0</div>
-            <div class="small">People</div>
-          </div>
+  <div class="sidebar">
+
+    <div class="panel">
+
+      <div class="panel-title">Who are you?</div>
+
+      <select id="nameSelect" onchange="saveName()">
+        <option value="">Select name…</option>
+        <option value="__new__">+ Add new name...</option>
+      </select>
+
+    </div>
+
+    <div class="panel">
+
+      <div class="panel-title">Summary</div>
+
+      <div class="stat-grid">
+
+        <div class="stat">
+          <div class="stat-num" id="statTotal">—</div>
+          <div class="stat-lbl">Sessions</div>
         </div>
 
-        <div id="teamRoster"></div>
+        <div class="stat">
+          <div class="stat-num" id="statMine">—</div>
+          <div class="stat-lbl">My picks</div>
+        </div>
+
+        <div class="stat">
+          <div class="stat-num" id="statPeople">—</div>
+          <div class="stat-lbl">People</div>
+        </div>
+
       </div>
+
+      <div class="panel-title" style="margin-top:4px">Team</div>
+
+      <div id="rosterList"></div>
 
     </div>
 
   </div>
+
 </div>
 
 <script>
+const API_URL='https://slate--partners-technolutions-net.cdn.technolutions.net/portal/public-summit-schedule?cmd=search&cache=900';
+const SHEET_API='https://script.google.com/macros/s/AKfycbz8EvFEf0-1-rqyTb-KExaMK8uagfoaYL4-hoLcqabj5CYVs02jjmqAqMy08-CKDgVB/exec';
 
-const API_URL =
-'https://slate--partners-technolutions-net.cdn.technolutions.net/portal/public-summit-schedule?cmd=search&cache=900';
+let sessions=[],
+    picks={},
+    currentUser=localStorage.getItem('summitUser')||'',
+    currentView='planner';
 
-const SHEET_API =
-'https://script.google.com/macros/s/AKfycbz8EvFEf0-1-rqyTb-KExaMK8uagfoaYL4-hoLcqabj5CYVs02jjmqAqMy08-CKDgVB/exec';
+const q=id=>document.getElementById(id);
 
-let currentUser = localStorage.getItem('summitUser') || '';
-let sessions = [];
-let picks = {};
-let currentView = 'individual';
+const esc=s=>String(s||'').replace(/[&<>]/g,m=>({
+  '&':'&amp;',
+  '<':'&lt;',
+  '>':'&gt;'
+}[m]));
 
-function saveName(){
-  currentUser = document.getElementById('name').value;
-  localStorage.setItem('summitUser', currentUser);
-  render();
+function parseDay(dayStr){
+  const d=new Date(dayStr);
+  return isNaN(d)?new Date(9999,0,1):d;
+}
+
+function parseTime(timeStr){
+  return new Date(`1970/01/01 ${timeStr}`);
+}
+
+function toggleDetails(id){
+  const el=q(id);
+  if(el) el.classList.toggle('open');
 }
 
 function setView(v){
-  currentView = v;
-  document.getElementById('individualBtn').classList.toggle('active-view', v==='individual');
-  document.getElementById('teamBtn').classList.toggle('active-view', v==='team');
+  currentView=v;
+  q('tabPlanner').classList.toggle('active',v==='planner');
+  q('tabMine').classList.toggle('active',v==='mine');
+  q('tabTeam').classList.toggle('active',v==='team');
   render();
 }
 
-function safe(v){
-  return String(v||'').replace(/[&<>]/g,m=>({
-    '&':'&amp;','<':'&lt;','>':'&gt;'
-  }[m]));
-}
-
-/* ---------- LOAD ---------- */
-async function loadSessions(){
-
-  const res = await fetch(API_URL);
-  const txt = await res.text();
-
-  const doc = new DOMParser().parseFromString(txt,'text/html');
-  const rows = [...doc.querySelectorAll('tbody tr')];
-  const headers = [...doc.querySelectorAll('thead th')].map(h=>h.textContent.trim());
-
-  sessions = rows.map((tr,i)=>{
-    const obj = {};
-    [...tr.children].forEach((td,j)=>obj[headers[j]]=td.textContent.trim());
-
-    return {
-      id:'s'+i,
-      title:obj['Session Title'] || '',
-      day:obj['Day'] || '',
-      time:obj['Time'] || '',
-      location:obj['Location'] || '',
-    };
+function populateNamesDropdown(namesList){
+  const sel = q('nameSelect');
+  sel.innerHTML = `<option value="">Select name…</option>`;
+  namesList.forEach(n => {
+    const opt = document.createElement('option');
+    opt.value = opt.textContent = n;
+    sel.appendChild(opt);
   });
+  
+  const addNew = document.createElement('option');
+  addNew.value = '__new__';
+  addNew.textContent = '+ Add new name...';
+  sel.appendChild(addNew);
 
-  populateFilters();
-  document.getElementById('sessions').innerHTML='';
+  if (currentUser && namesList.includes(currentUser)) {
+    sel.value = currentUser;
+  }
+}
+
+async function saveName(){
+  const sel=q('nameSelect');
+  
+  if(sel.value==='__new__'){
+    const n=prompt("Enter your name to add it to the list:");
+    if(n && n.trim()){
+      const cleanName = n.trim();
+      currentUser = cleanName;
+      localStorage.setItem('summitUser', currentUser);
+      
+      const form = new URLSearchParams();
+      form.append('sessionId', '__user_reg__');
+      form.append('sessionTitle', 'User Registration');
+      form.append('userName', cleanName);
+      form.append('selected', false);
+      form.append('rating', 0);
+      form.append('hidden', false);
+      
+      try {
+        await fetch(SHEET_API, { method: 'POST', body: form });
+        await loadPicks(); 
+      } catch(e) {}
+    }else{
+      sel.value=currentUser||"";
+    }
+    return;
+  }
+
+  currentUser=sel.value;
+  localStorage.setItem('summitUser',currentUser);
   render();
 }
 
-/* ---------- FILTERS ---------- */
+async function loadSessions(){
+  try{
+    const res=await fetch(API_URL);
+    const txt=await res.text();
+    const doc=new DOMParser().parseFromString(txt,'text/html');
+    const rows=[...doc.querySelectorAll('tbody tr')];
+    const headers=[...doc.querySelectorAll('thead th')].map(h=>h.textContent.trim());
+
+    sessions=rows.map((tr,i)=>{
+      const obj={};
+      
+      [...tr.children].forEach((td,j)=>{
+        let htmlStr = td.innerHTML.replace(/<(div|p|br|li|ul|h[1-6])[^>]*>/gi, ' ').replace(/<[^>]+>/g, '');
+        const txtNode = document.createElement('textarea');
+        txtNode.innerHTML = htmlStr;
+        obj[headers[j]] = txtNode.value.replace(/\s+/g, ' ').trim();
+      });
+
+      let rawSession = obj['Session Title'] || obj['Session'] || obj['Name'] || '';
+      if(!rawSession) {
+         rawSession = Object.values(obj).reduce((a, b) => ((a||'').length > (b||'').length ? a : b), '');
+      }
+
+      // Check if data is smushed, and reliably split it using exact Slate headers
+      const splitRegex = /(Level:|Track:|Session Details|Description|Presenter\(s\):?|Presenters?:?)/i;
+      
+      let parts = rawSession.split(splitRegex);
+      let title = parts[0].trim();
+      let level = obj['Level'] || '';
+      let track = obj['Track'] || '';
+      let details = obj['Session Details'] || obj['Description'] || '';
+      let presenters = obj['Presenter'] || obj['Presenters'] || obj['Presenter(s)'] || '';
+
+      // Cycle through parts and assign them based on the preceding header match
+      for (let k = 1; k < parts.length; k += 2) {
+          let key = parts[k].toLowerCase();
+          let val = (parts[k+1] || '').trim();
+          
+          if (key.includes('level') && !level) level = val;
+          else if (key.includes('track') && !track) track = val;
+          else if ((key.includes('details') || key.includes('description')) && !details) details = val;
+          else if (key.includes('presenter') && !presenters) presenters = val;
+      }
+
+      return{
+        id:'s'+i,
+        title: title || 'Untitled Session',
+        day:obj['Date']||obj['Day']||'',
+        time:obj['Time (CDT)']||obj['Time']||'',
+        location:obj['Location']||'',
+        level: level,
+        track: track,
+        details: details,
+        presenters: presenters
+      };
+    }).filter(s=>s.title && s.title !== 'Untitled Session');
+
+    populateFilters();
+    q('loadStatus').textContent=sessions.length+' sessions';
+    render();
+  }catch(e){
+    q('loadStatus').textContent='Error loading';
+    q('feed').innerHTML='<div class="empty">Could not load sessions.</div>';
+  }
+}
+
 function populateFilters(){
+  const days=[...new Set(sessions.map(s=>s.day).filter(Boolean))].sort((a,b)=>parseDay(a)-parseDay(b));
+  const times=[...new Set(sessions.map(s=>s.time).filter(Boolean))].sort((a,b)=>parseTime(a)-parseTime(b));
 
-  const days = [...new Set(sessions.map(s=>s.day).filter(Boolean))];
-  const times = [...new Set(sessions.map(s=>s.time).filter(Boolean))];
+  const daySel=q('dayFilter');
+  const timeSel=q('timeFilter');
+  daySel.innerHTML='<option value="">All days</option>';
+  timeSel.innerHTML='<option value="">All times</option>';
 
-  const daySel = document.getElementById('dayFilter');
-  const timeSel = document.getElementById('timeFilter');
-
-  days.sort().forEach(d=>{
+  days.forEach(d=>{
     const o=document.createElement('option');
     o.value=o.textContent=d;
     daySel.appendChild(o);
   });
 
-  times.sort().forEach(t=>{
+  times.forEach(t=>{
     const o=document.createElement('option');
     o.value=o.textContent=t;
     timeSel.appendChild(o);
   });
 }
 
-/* ---------- PICKS ---------- */
-async function listenPicks(){
-  const r = await fetch(SHEET_API);
-  const data = await r.json();
+async function loadPicks(){
+  try{
+    const r=await fetch(SHEET_API);
+    const data=await r.json();
+    picks={};
+    
+    let allSheetUsers = new Set();
+    
+    data.forEach(row=>{
+      if(row.userName) allSheetUsers.add(row.userName);
+      
+      if(row.sessionId && row.sessionId !== '__user_reg__') {
+        if(!picks[row.sessionId]) picks[row.sessionId]={};
+        picks[row.sessionId][row.userName]={
+          selected:row.selected===true||row.selected==='TRUE',
+          rating:Number(row.rating||0),
+          hidden:row.hidden===true||row.hidden==='TRUE'
+        };
+      }
+    });
+    
+    populateNamesDropdown(Array.from(allSheetUsers).sort());
+    render();
+  }catch(e){
+    console.warn('picks error',e);
+  }
+}
 
-  picks = {};
-  data.forEach(row=>{
-    if(!picks[row.sessionId]) picks[row.sessionId]={};
-    picks[row.sessionId][row.userName]={
-      selected: row.selected === true || row.selected === 'TRUE',
-      rating: Number(row.rating||0)
-    };
-  });
+async function togglePick(id){
+  if(!currentUser){ alert('Select your name first'); return; }
+
+  const s=sessions.find(x=>x.id===id);
+  const ex=picks?.[id]?.[currentUser];
+  const nowSelected=!(ex?.selected);
+
+  if(!picks[id]) picks[id]={};
+  picks[id][currentUser]={
+    selected:nowSelected,
+    rating:ex?.rating||0,
+    hidden:ex?.hidden||false
+  };
 
   render();
-}
 
-/* ---------- SAVE ---------- */
-async function saveSelection(id,title,selected,rating){
-
-  const form = new URLSearchParams();
+  const form=new URLSearchParams();
   form.append('sessionId',id);
-  form.append('sessionTitle',title);
+  form.append('sessionTitle',s.title);
   form.append('userName',currentUser);
-  form.append('selected',selected);
+  form.append('selected',nowSelected);
+  form.append('rating',ex?.rating||0);
+  form.append('hidden',ex?.hidden||false);
+
+  try{ await fetch(SHEET_API,{method:'POST',body:form}); await loadPicks(); }catch(e){}
+}
+
+async function setRating(id,rating){
+  if(!currentUser){ alert('Select your name first'); return; }
+
+  const s=sessions.find(x=>x.id===id);
+  const ex=picks?.[id]?.[currentUser];
+
+  if(!picks[id]) picks[id]={};
+  picks[id][currentUser]={
+    selected:ex?.selected||false,
+    rating,
+    hidden:ex?.hidden||false
+  };
+
+  render();
+
+  const form=new URLSearchParams();
+  form.append('sessionId',id);
+  form.append('sessionTitle',s.title);
+  form.append('userName',currentUser);
+  form.append('selected',ex?.selected||false);
   form.append('rating',rating);
+  form.append('hidden',ex?.hidden||false);
 
-  await fetch(SHEET_API,{method:'POST',body:form});
-  listenPicks();
+  try{ await fetch(SHEET_API,{method:'POST',body:form}); await loadPicks(); }catch(e){}
 }
 
-/* ---------- ACTIONS ---------- */
-function togglePick(id){
-  if(!currentUser) return alert('Select a name first');
+async function toggleHide(id, forceHidden){
+  if(!currentUser){ alert('Select your name first'); return; }
 
-  const s = sessions.find(x=>x.id===id);
-  const ex = picks?.[id]?.[currentUser];
+  const s=sessions.find(x=>x.id===id);
+  const ex=picks?.[id]?.[currentUser];
+  
+  if(!picks[id]) picks[id]={};
+  picks[id][currentUser]={
+    selected:ex?.selected||false,
+    rating:ex?.rating||0,
+    hidden:forceHidden
+  };
 
-  saveSelection(id,s.title,!(ex?.selected),ex?.rating||0);
+  render();
+
+  const form=new URLSearchParams();
+  form.append('sessionId',id);
+  form.append('sessionTitle',s.title);
+  form.append('userName',currentUser);
+  form.append('selected',ex?.selected||false);
+  form.append('rating',ex?.rating||0);
+  form.append('hidden',forceHidden);
+
+  try{ await fetch(SHEET_API,{method:'POST',body:form}); await loadPicks(); }catch(e){}
 }
 
-/* ---------- RENDER ---------- */
-function render(){
+function starsHtml(id,myRating){
+  return `
+    <div class="stars" style="margin-bottom: 8px;">
+      ${[1,2,3,4,5].map(n=>`
+        <button class="star${myRating>=n?' lit':''}" onclick="setRating('${id}',${n})">★</button>
+      `).join('')}
+    </div>
+  `;
+}
 
-  const q = document.getElementById('search').value.toLowerCase();
-  const day = document.getElementById('dayFilter').value;
-  const time = document.getElementById('timeFilter').value;
+function groupSessions(list){
+  const byDay={};
+  list.forEach(s=>{
+    if(!byDay[s.day]) byDay[s.day]={};
+    if(!byDay[s.day][s.time]) byDay[s.day][s.time]=[];
+    byDay[s.day][s.time].push(s);
+  });
+  return byDay;
+}
 
-  const filtered = sessions.filter(s=>
-    (!q || s.title.toLowerCase().includes(q)) &&
-    (!day || s.day===day) &&
-    (!time || s.time===time)
-  ).sort((a,b)=>a.day.localeCompare(b.day)||a.time.localeCompare(b.time));
+function renderGrouped(list,cardFn){
+  if(!list.length) return '<div class="empty">No sessions found</div>';
 
-  const el = document.getElementById('sessions');
+  const grouped=groupSessions(list);
+  const days=Object.keys(grouped).sort((a,b)=>parseDay(a)-parseDay(b));
 
-  const allUsers = [...new Set(Object.values(picks).flatMap(x=>Object.keys(x||{})))];
-
-  document.getElementById('statSessions').textContent = sessions.length;
-  document.getElementById('statPeople').textContent = allUsers.length;
-  document.getElementById('statSelected').textContent =
-    filtered.filter(s=>picks?.[s.id]?.[currentUser]?.selected).length;
-
-  document.getElementById('teamRoster').innerHTML =
-    allUsers.map(u=>`<div class="small">• ${u}</div>`).join('');
-
-  if(currentView==='team'){
-    const selected = filtered.filter(s=>
-      Object.values(picks[s.id]||{}).some(v=>v.selected)
-    );
-
-    el.innerHTML = selected.map(s=>{
-      const users = Object.entries(picks[s.id]||{}).filter(([_,v])=>v.selected);
-
+  return days.map(day=>{
+    const times=Object.keys(grouped[day]).sort((a,b)=>parseTime(a)-parseTime(b));
+    const timeSections=times.map(time=>{
+      const cards=grouped[day][time].map(s=>cardFn(s)).join('');
       return `
-        <div class="card">
-          <div class="session-title">${safe(s.title)}</div>
-          <div class="meta">${s.day} • ${s.time} • ${s.location}</div>
-          <div class="small">${users.length} attending</div>
+        <div class="time-section">
+          <div class="time-pill">
+            <i class="ti ti-clock"></i>
+            ${esc(time)}
+          </div>
+          ${cards}
         </div>
       `;
     }).join('');
 
+    return `
+      <div class="day-block">
+        <div class="day-header">${esc(day)}</div>
+        ${timeSections}
+      </div>
+    `;
+  }).join('');
+}
+
+function generateCard(s, viewType){
+  const mine=picks?.[s.id]?.[currentUser]?.selected;
+  const myRating=picks?.[s.id]?.[currentUser]?.rating||0;
+  const isHidden=picks?.[s.id]?.[currentUser]?.hidden;
+  
+  let cardClass = "session-card";
+  let attendees = [];
+  let rated = [];
+
+  // Identify attendance/ratings for team tab vs others
+  if(viewType === 'team'){
+    const allEntries = Object.entries(picks[s.id]||{});
+    attendees = allEntries.filter(([_,v])=>v.selected);
+    rated = allEntries.filter(([_,v])=>v.rating>0 && !v.selected).sort((a,b)=>b[1].rating-a[1].rating);
+    
+    if(attendees.length) cardClass += " attending";
+    else if(rated.length) cardClass += " rated";
+  }else{
+    if(mine) cardClass += " attending";
+  }
+
+  // ONLY apply hidden styling on the Session Planner view
+  if(isHidden && viewType === 'planner') {
+    cardClass += " hidden-card";
+  }
+
+  // Generate explicit buttons for ALL views
+  let pickBtnHTML = `
+    <button class="pick-btn${mine?' selected':''}" onclick="togglePick('${s.id}')">
+      <i class="ti ${mine?'ti-check':'ti-calendar-plus'}"></i>
+      ${mine ? 'Remove from My Schedule' : 'Add to My Schedule'}
+    </button>
+  `;
+  
+  let hideBtnHTML = "";
+  if(isHidden) {
+    hideBtnHTML = `<button class="text-action-btn" onclick="toggleHide('${s.id}', false)"><i class="ti ti-eye"></i> Unhide</button>`;
+  } else {
+    hideBtnHTML = `<button class="text-action-btn" onclick="toggleHide('${s.id}', true)"><i class="ti ti-eye-off"></i> Hide</button>`;
+  }
+
+  const detailsId = `details-${s.id}-${viewType}`;
+  
+  let levelTrackStr = "";
+  if(s.level && s.track) levelTrackStr = `Level: ${esc(s.level)} | Track: ${esc(s.track)}`;
+  else if(s.level) levelTrackStr = `Level: ${esc(s.level)}`;
+  else if(s.track) levelTrackStr = `Track: ${esc(s.track)}`;
+
+  return `
+    <div class="${cardClass}">
+      <div class="session-top">
+        <div style="flex:1">
+          <div class="session-title">${esc(s.title)}</div>
+          ${levelTrackStr ? `<div class="session-level">${levelTrackStr}</div>` : ''}
+          
+          <button class="expand-btn" onclick="toggleDetails('${detailsId}')">View Details</button>
+        </div>
+        <div class="card-actions">
+          ${hideBtnHTML}
+          ${pickBtnHTML}
+        </div>
+      </div>
+      
+      ${s.location?`
+        <div class="session-meta">
+          <span class="meta-pill pill-loc">
+            <i class="ti ti-map-pin"></i>
+            ${esc(s.location)}
+          </span>
+        </div>
+      `:''}
+      
+      ${starsHtml(s.id, myRating)}
+
+      ${viewType === 'team' && attendees.length ? `
+        <div class="attending-group">
+          <div class="group-label">Attending</div>
+          <div class="team-row">
+            ${attendees.map(([u,v])=>`<span class="attendee-chip">${esc(u)}${v.rating?` • ${'★'.repeat(v.rating)}`:''}</span>`).join('')}
+          </div>
+        </div>
+      `:''}
+
+      ${viewType === 'team' && rated.length ? `
+        <div class="attending-group">
+          <div class="group-label">Interested / Rated</div>
+          <div class="team-row">
+            ${rated.map(([u,v])=>`<span class="rating-chip">${esc(u)} • ${'★'.repeat(v.rating)}</span>`).join('')}
+          </div>
+        </div>
+      `:''}
+
+      <div class="session-details" id="${detailsId}">
+        ${s.presenters ? `<strong>Presenters:</strong><br>${esc(s.presenters)}<br><br>` : ''}
+        ${esc(s.details) ? `<strong>Session Details:</strong><br>${esc(s.details)}` : ''}
+      </div>
+    </div>
+  `;
+}
+
+function plannerCard(s){ return generateCard(s, 'planner'); }
+function mineCard(s){ return generateCard(s, 'mine'); }
+function teamCard(s){ return generateCard(s, 'team'); }
+
+function render(){
+  const sq=q('search').value.toLowerCase();
+  const day=q('dayFilter').value;
+  const time=q('timeFilter').value;
+
+  const showHiddenWrap = q('showHiddenWrap');
+  if(currentView === 'planner' && currentUser){
+    showHiddenWrap.style.display = 'flex';
+  } else {
+    showHiddenWrap.style.display = 'none';
+  }
+
+  const allUsers = [...q('nameSelect').options]
+    .map(o => o.value)
+    .filter(v => v && v !== '__new__')
+    .sort();
+
+  let base=sessions.filter(s=>
+    (!sq||s.title.toLowerCase().includes(sq)) &&
+    (!day||s.day===day) &&
+    (!time||s.time===time)
+  ).sort((a,b)=>{
+    const dayDiff=parseDay(a.day)-parseDay(b.day);
+    return dayDiff || (parseTime(a.time)-parseTime(b.time));
+  });
+
+  // Filter out hidden sessions ONLY on the planner unless "Show Hidden" is checked
+  if(currentView === 'planner' && currentUser && !q('showHidden').checked) {
+    base = base.filter(s => !(picks?.[s.id]?.[currentUser]?.hidden));
+  }
+
+  q('statTotal').textContent=sessions.length||'—';
+  q('statMine').textContent=sessions.filter(s=>picks?.[s.id]?.[currentUser]?.selected).length;
+  q('statPeople').textContent=allUsers.length||'—';
+
+  q('rosterList').innerHTML=allUsers.length
+    ? allUsers.map(u=>{
+      const cnt=Object.values(picks).filter(p=>p[u]?.selected).length;
+      return `
+        <div class="roster-item">
+          <div class="avatar">${u.charAt(0)}</div>
+          <div class="roster-name">${esc(u)}</div>
+          <div class="roster-count">${cnt} pick${cnt!==1?'s':''}</div>
+        </div>
+      `;
+    }).join('')
+    : `<div style="font-size:12px;color:#64748b;padding:6px 0">No picks yet</div>`;
+
+  const feed=q('feed');
+
+  if(!sessions.length){
+    feed.innerHTML=`
+      <div class="loading-msg">
+        <div class="spinner"></div>
+        Loading…
+      </div>
+    `;
     return;
   }
 
-  /* INDIVIDUAL VIEW WITH GROUPING */
-  let html='';
-  let lastDay='', lastTime='';
-
-  filtered.forEach(s=>{
-
-    if(s.day!==lastDay){
-      html+=`<div class="day-header">${s.day}</div>`;
-      lastDay=s.day;
-      lastTime='';
+  if(currentView==='planner'){
+    feed.innerHTML=renderGrouped(base,plannerCard);
+  }else if(currentView==='mine'){
+    if(!currentUser){
+      feed.innerHTML=`<div class="empty">Select your name to see your picks</div>`;
+      return;
     }
-
-    if(s.time!==lastTime){
-      html+=`<div class="time-header">${s.time}</div>`;
-      lastTime=s.time;
+    const mine=base.filter(s=>picks?.[s.id]?.[currentUser]?.selected);
+    feed.innerHTML=renderGrouped(mine,mineCard);
+    if(!mine.length){
+      feed.innerHTML=`<div class="empty">You haven't picked any sessions yet</div>`;
     }
-
-    const mine = picks?.[s.id]?.[currentUser]?.selected;
-
-    html+=`
-      <div class="card">
-        <div class="session-title">${safe(s.title)}</div>
-        <div class="meta">${s.location}</div>
-
-        <button class="${mine?'active':''}" onclick="togglePick('${s.id}')">
-          ${mine?'Selected':'Select'}
-        </button>
-      </div>
-    `;
-  });
-
-  el.innerHTML = html || `<div class="card">No sessions found</div>`;
+  }else if(currentView==='team'){
+    const team=base.filter(s=>{
+      const vals=Object.values(picks[s.id]||{});
+      return vals.some(v=>v.selected || v.rating>0);
+    });
+    feed.innerHTML=renderGrouped(team,teamCard);
+    if(!team.length){
+      feed.innerHTML=`<div class="empty">No team activity yet</div>`;
+    }
+  }
 }
 
-/* INIT */
 loadSessions();
-listenPicks();
-
+loadPicks();
 </script>
 
 </body>
