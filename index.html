@@ -121,7 +121,6 @@ select:focus,input:focus{
   display:flex;
   align-items:center;
   gap:10px;
-  /* Replaced margin with padding so the solid background hides scrolling elements */
   padding:10px 0 24px;
   margin-bottom:0;
   flex-wrap:wrap
@@ -130,7 +129,7 @@ select:focus,input:focus{
 .view-tabs{
   display:flex;
   gap:8px;
-  width:100%; /* Forces the tabs onto their own row */
+  width:100%;
   margin-bottom:0
 }
 
@@ -247,7 +246,7 @@ select:focus,input:focus{
 
 .day-header{
   position:sticky;
-  top:var(--day-top); /* Dynamic offset */
+  top:var(--day-top); 
   z-index:20;
   background:#f3f4f6;
   padding:8px 0 12px;
@@ -264,7 +263,7 @@ select:focus,input:focus{
 
 .time-pill{
   position:sticky;
-  top:var(--time-top); /* Dynamic offset */
+  top:var(--time-top); 
   z-index:15;
   display:inline-flex;
   align-items:center;
@@ -541,6 +540,28 @@ select:focus,input:focus{
 @keyframes spin{
   to{transform:rotate(360deg)}
 }
+
+/* MOBILE FIXES */
+@media(max-width: 640px) {
+  .session-top {
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .card-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .pick-btn {
+    width: auto;
+    flex: 1; /* Allows button to expand and fill space instead of staying locked */
+  }
+
+  .view-tabs {
+    flex-wrap: wrap; /* Prevent tabs from shrinking to unreadable sizes */
+  }
+}
 </style>
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css">
@@ -682,14 +703,11 @@ window.addEventListener('resize', updateStickyOffsets);
 function updateStickyOffsets() {
   const fb = document.querySelector('.filter-bar');
   if (fb) {
-    // 61px is the height of the fixed top navigation bar
     const offset = 61 + fb.offsetHeight;
     document.documentElement.style.setProperty('--day-top', offset + 'px');
     
-    // Calculate the height of the day-header to place the time-pill directly below it
     const dh = document.querySelector('.day-header');
     const dhHeight = dh ? dh.offsetHeight : 46; 
-    // Add 14px to account for the margin-bottom of the day-header
     document.documentElement.style.setProperty('--time-top', (offset + dhHeight + 14) + 'px');
   }
 }
@@ -1225,7 +1243,6 @@ function render(){
     }
   }
 
-  // Calculate sticky offset heights after the DOM is rendered
   setTimeout(updateStickyOffsets, 0);
 }
 
