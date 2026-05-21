@@ -1178,17 +1178,20 @@ async function togglePick(id){
   }
 }
 
-async function setRating(id,rating){
+async function setRating(id, rating){
   if(!currentUser){ alert('Select your name first'); return; }
 
   const s=sessions.find(x=>x.id===id);
-  const ex=picks?.[id]?.[currentUser];
+  const ex=picks?.[id]?.[currentUser] || {};
+
+  // If the clicked star matches the current rating, toggle it to 0
+  const newRating = (ex.rating === rating) ? 0 : rating;
 
   if(!picks[id]) picks[id]={};
   picks[id][currentUser]={
-    selected:ex?.selected||false,
-    rating,
-    hidden:ex?.hidden||false,
+    selected:ex.selected||false,
+    rating: newRating,
+    hidden:ex.hidden||false,
     isPending:true
   };
 
@@ -1198,9 +1201,9 @@ async function setRating(id,rating){
   form.append('sessionId',id);
   form.append('sessionTitle',s.title);
   form.append('userName',currentUser);
-  form.append('selected',ex?.selected||false);
-  form.append('rating',rating);
-  form.append('hidden',ex?.hidden||false);
+  form.append('selected',ex.selected||false);
+  form.append('rating', newRating);
+  form.append('hidden',ex.hidden||false);
 
   try{ 
     await fetch(SHEET_API,{method:'POST',body:form}); 
