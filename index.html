@@ -924,7 +924,7 @@ async function saveName(){
       form.append('userName', cleanName);
       form.append('selected', false);
       form.append('rating', 0);
-      form.append('hidden', false);
+      form.append('hide', false);
       
       try {
         await fetch(SHEET_API, { method: 'POST', body: form });
@@ -1060,7 +1060,7 @@ async function loadPicks(){
         serverPicks[row.sessionId][row.userName]={
           selected:row.selected===true||row.selected==='TRUE',
           rating:Number(row.rating||0),
-          hidden:row.hidden===true||row.hidden==='TRUE'
+          hide:row.hide===true||row.hide==='TRUE'
         };
       }
     });
@@ -1103,7 +1103,7 @@ async function togglePick(id){
   picks[id][currentUser]={
     selected:nowSelected,
     rating:ex?.rating||0,
-    hidden:ex?.hidden||false,
+    hide:ex?.hide||false,
     isPending:true
   };
 
@@ -1115,7 +1115,7 @@ async function togglePick(id){
   form.append('userName',currentUser);
   form.append('selected',nowSelected);
   form.append('rating',ex?.rating||0);
-  form.append('hidden',ex?.hidden||false);
+  form.append('hide',ex?.hide||false);
 
   try{ 
     await fetch(SHEET_API,{method:'POST',body:form}); 
@@ -1138,7 +1138,7 @@ async function setRating(id,rating){
   picks[id][currentUser]={
     selected:ex?.selected||false,
     rating,
-    hidden:ex?.hidden||false,
+    hide:ex?.hide||false,
     isPending:true
   };
 
@@ -1150,7 +1150,7 @@ async function setRating(id,rating){
   form.append('userName',currentUser);
   form.append('selected',ex?.selected||false);
   form.append('rating',rating);
-  form.append('hidden',ex?.hidden||false);
+  form.append('hide',ex?.hide||false);
 
   try{ 
     await fetch(SHEET_API,{method:'POST',body:form}); 
@@ -1173,7 +1173,7 @@ async function toggleHide(id, forceHidden){
   picks[id][currentUser]={
     selected:ex?.selected||false,
     rating:ex?.rating||0,
-    hidden:forceHidden,
+    hide:forceHidden,
     isPending:true
   };
 
@@ -1185,7 +1185,7 @@ async function toggleHide(id, forceHidden){
   form.append('userName',currentUser);
   form.append('selected',ex?.selected||false);
   form.append('rating',ex?.rating||0);
-  form.append('hidden',forceHidden);
+  form.append('hide',forceHidden);
 
   try{ 
     await fetch(SHEET_API,{method:'POST',body:form}); 
@@ -1251,7 +1251,7 @@ function renderGrouped(list,cardFn){
 function generateCard(s, viewType){
   const mine=picks?.[s.id]?.[currentUser]?.selected;
   const myRating=picks?.[s.id]?.[currentUser]?.rating||0;
-  const isHidden=picks?.[s.id]?.[currentUser]?.hidden;
+  const isHidden=picks?.[s.id]?.[currentUser]?.hide;
   
   let cardClass = "session-card";
   let attendees = [];
@@ -1392,7 +1392,6 @@ function render(){
 
     return true;
   });
-  // Sort removed here, we handle it per-view below for better granularity.
 
   q('statTotal').textContent=sessions.length||'—';
   q('statMine').textContent=sessions.filter(s=>picks?.[s.id]?.[currentUser]?.selected).length;
@@ -1426,10 +1425,9 @@ function render(){
 
   if(currentView==='planner'){
     if(currentUser && !q('showHidden').checked) {
-      base = base.filter(s => !(picks?.[s.id]?.[currentUser]?.hidden));
+      base = base.filter(s => !(picks?.[s.id]?.[currentUser]?.hide));
     }
     
-    // Sort logic for standard planner view
     base = [...base].sort((a,b)=>{
       const dayDiff=parseDay(a.day)-parseDay(b.day);
       return dayDiff || (parseTime(a.time)-parseTime(b.time));
@@ -1452,7 +1450,6 @@ function render(){
        });
     }
 
-    // Sort: Day -> Time -> Selected -> Rating (Highest to Lowest)
     mineList = [...mineList].sort((a, b) => {
       const dayDiff = parseDay(a.day) - parseDay(b.day);
       if (dayDiff) return dayDiff;
@@ -1480,7 +1477,6 @@ function render(){
       return vals.some(v => v.selected || v.rating > 0);
     });
 
-    // Sort: Day -> Time -> Selected by Anyone -> Highest Rating by Anyone
     team.sort((a, b) => {
       const dayDiff = parseDay(a.day) - parseDay(b.day);
       if (dayDiff) return dayDiff;
