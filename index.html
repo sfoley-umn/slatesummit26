@@ -809,7 +809,7 @@ select:focus,input:focus{
 
 <script>
 const API_URL='https://slate--partners-technolutions-net.cdn.technolutions.net/portal/public-summit-schedule?cmd=search&cache=900';
-const SHEET_API='https://script.google.com/macros/s/AKfycbz8EvFEf0-1-rqyTb-KExaMK8uagfoaYL4-hoLcqabj5CYVs02jjmqAqMy08-CKDgVB/exec';
+const SHEET_API='https://script.google.com/macros/s/AKfycbyiJTl2Ok2A-odEZJE4-Y-8HYzks8-kLfS6telLBwr7fndVZLmsjHwLMKq3Tg7zRr0/exec';
 
 let sessions=[],
     picks={},
@@ -924,7 +924,7 @@ async function saveName(){
       form.append('userName', cleanName);
       form.append('selected', false);
       form.append('rating', 0);
-      form.append('hide', false);
+      form.append('hidden', false);
       
       try {
         await fetch(SHEET_API, { method: 'POST', body: form });
@@ -1060,7 +1060,7 @@ async function loadPicks(){
         serverPicks[row.sessionId][row.userName]={
           selected:row.selected===true||row.selected==='TRUE',
           rating:Number(row.rating||0),
-          hide:row.hide===true||row.hide==='TRUE'
+          hidden:row.hidden===true||row.hidden==='TRUE'
         };
       }
     });
@@ -1103,7 +1103,7 @@ async function togglePick(id){
   picks[id][currentUser]={
     selected:nowSelected,
     rating:ex?.rating||0,
-    hide:ex?.hide||false,
+    hidden:ex?.hidden||false,
     isPending:true
   };
 
@@ -1115,7 +1115,7 @@ async function togglePick(id){
   form.append('userName',currentUser);
   form.append('selected',nowSelected);
   form.append('rating',ex?.rating||0);
-  form.append('hide',ex?.hide||false);
+  form.append('hidden',ex?.hidden||false);
 
   try{ 
     await fetch(SHEET_API,{method:'POST',body:form}); 
@@ -1138,7 +1138,7 @@ async function setRating(id,rating){
   picks[id][currentUser]={
     selected:ex?.selected||false,
     rating,
-    hide:ex?.hide||false,
+    hidden:ex?.hidden||false,
     isPending:true
   };
 
@@ -1150,7 +1150,7 @@ async function setRating(id,rating){
   form.append('userName',currentUser);
   form.append('selected',ex?.selected||false);
   form.append('rating',rating);
-  form.append('hide',ex?.hide||false);
+  form.append('hidden',ex?.hidden||false);
 
   try{ 
     await fetch(SHEET_API,{method:'POST',body:form}); 
@@ -1173,7 +1173,7 @@ async function toggleHide(id, forceHidden){
   picks[id][currentUser]={
     selected:ex?.selected||false,
     rating:ex?.rating||0,
-    hide:forceHidden,
+    hidden:forceHidden,
     isPending:true
   };
 
@@ -1185,7 +1185,7 @@ async function toggleHide(id, forceHidden){
   form.append('userName',currentUser);
   form.append('selected',ex?.selected||false);
   form.append('rating',ex?.rating||0);
-  form.append('hide',forceHidden);
+  form.append('hidden',forceHidden);
 
   try{ 
     await fetch(SHEET_API,{method:'POST',body:form}); 
@@ -1251,7 +1251,7 @@ function renderGrouped(list,cardFn){
 function generateCard(s, viewType){
   const mine=picks?.[s.id]?.[currentUser]?.selected;
   const myRating=picks?.[s.id]?.[currentUser]?.rating||0;
-  const isHidden=picks?.[s.id]?.[currentUser]?.hide;
+  const isHidden=picks?.[s.id]?.[currentUser]?.hidden;
   
   let cardClass = "session-card";
   let attendees = [];
@@ -1425,7 +1425,7 @@ function render(){
 
   if(currentView==='planner'){
     if(currentUser && !q('showHidden').checked) {
-      base = base.filter(s => !(picks?.[s.id]?.[currentUser]?.hide));
+      base = base.filter(s => !(picks?.[s.id]?.[currentUser]?.hidden));
     }
     
     base = [...base].sort((a,b)=>{
