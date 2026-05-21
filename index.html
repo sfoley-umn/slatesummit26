@@ -42,6 +42,20 @@ body{
   font-weight:600
 }
 
+/* MOBILE PERSISTENT BADGE */
+.view-badge {
+  display: none;
+  font-size: 11px;
+  background: #0f6ea8;
+  color: #fff;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  white-space: nowrap;
+}
+
 .topbar .sub{
   font-size:12px;
   color:#cbd5e1;
@@ -567,10 +581,18 @@ select:focus,input:focus{
 }
 
 @media(max-width: 900px) {
-  .topbar {
-    position: static;
+  .view-badge {
+    display: inline-block;
   }
-  
+
+  .topbar h1 {
+    font-size: 13px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 140px;
+  }
+
   .mobile-filter-fab {
     display: inline-flex;
   }
@@ -666,7 +688,8 @@ select:focus,input:focus{
 <body>
 
 <div class="topbar">
-  <h1>Slate Summit 2026 Session Planner</h1>
+  <h1>Slate Summit 2026</h1>
+  <span id="activeViewBadge" class="view-badge">Planner</span>
   <div class="sub" id="loadStatus">Loading…</div>
 </div>
 
@@ -805,15 +828,16 @@ window.addEventListener('resize', updateStickyOffsets);
 
 function updateStickyOffsets() {
   const fb = document.querySelector('.filter-bar');
+  const tbHeight = 61;
   
   if (window.innerWidth <= 900) {
-    document.documentElement.style.setProperty('--day-top', '0px');
+    document.documentElement.style.setProperty('--day-top', tbHeight + 'px');
     const dh = document.querySelector('.day-header');
     const dhHeight = dh ? dh.offsetHeight : 46; 
-    document.documentElement.style.setProperty('--time-top', (dhHeight + 14) + 'px');
+    document.documentElement.style.setProperty('--time-top', (tbHeight + dhHeight) + 'px');
   } else {
     if (fb) {
-      const offset = 61 + fb.offsetHeight;
+      const offset = tbHeight + fb.offsetHeight;
       document.documentElement.style.setProperty('--day-top', offset + 'px');
       const dh = document.querySelector('.day-header');
       const dhHeight = dh ? dh.offsetHeight : 46; 
@@ -851,6 +875,13 @@ function setView(v){
   q('tabPlanner').classList.toggle('active',v==='planner');
   q('tabMine').classList.toggle('active',v==='mine');
   q('tabTeam').classList.toggle('active',v==='team');
+  
+  const badge = q('activeViewBadge');
+  if(badge) {
+    if(v === 'planner') badge.textContent = 'Planner';
+    else if(v === 'mine') badge.textContent = 'My Schedule';
+    else if(v === 'team') badge.textContent = 'Team Schedule';
+  }
   
   const fb = q('filterBar');
   if (fb) fb.classList.remove('mobile-open');
