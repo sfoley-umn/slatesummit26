@@ -126,6 +126,10 @@ select:focus,input:focus{
   flex-wrap:wrap
 }
 
+.mobile-filter-header {
+  display: none;
+}
+
 .view-tabs{
   display:flex;
   gap:8px;
@@ -305,7 +309,8 @@ select:focus,input:focus{
 }
 
 .session-card.rated{
-  border-left:6px solid #f59e0b
+  border-left:6px solid #f59e0b;
+  background:#fffbeb
 }
 
 .session-card.hidden-card{
@@ -541,7 +546,102 @@ select:focus,input:focus{
   to{transform:rotate(360deg)}
 }
 
-/* MOBILE FIXES */
+/* MOBILE SYSTEM STYLING EXCLUSIVES */
+.mobile-filter-fab {
+  display: none;
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: #0f6ea8;
+  color: #fff;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 0 4px 14px rgba(15, 110, 168, 0.4);
+  cursor: pointer;
+  z-index: 150;
+  align-items: center;
+  gap: 8px;
+}
+
+@media(max-width: 900px) {
+  .topbar {
+    position: static;
+  }
+  
+  .mobile-filter-fab {
+    display: inline-flex;
+  }
+
+  .filter-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #ffffff;
+    z-index: 200;
+    padding: 24px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+    display: none;
+    overflow-y: auto;
+    box-shadow: none;
+  }
+
+  .filter-bar.mobile-open {
+    display: flex;
+  }
+
+  .filter-bar select, 
+  .filter-bar input[type=text] {
+    width: 100% !important;
+  }
+
+  .mobile-filter-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 14px;
+  }
+
+  .mobile-filter-header h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #0f172a;
+  }
+
+  .close-filters-btn {
+    background: #f1f5f9;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    color: #475569;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .view-tabs {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .checkbox-lbl {
+    margin-left: 0;
+    padding: 8px 4px;
+  }
+}
+
 @media(max-width: 640px) {
   .session-top {
     flex-direction: column;
@@ -555,11 +655,7 @@ select:focus,input:focus{
   
   .pick-btn {
     width: auto;
-    flex: 1; /* Allows button to expand and fill space instead of staying locked */
-  }
-
-  .view-tabs {
-    flex-wrap: wrap; /* Prevent tabs from shrinking to unreadable sizes */
+    flex: 1;
   }
 }
 </style>
@@ -578,7 +674,11 @@ select:focus,input:focus{
 
   <div class="main">
 
-    <div class="filter-bar">
+    <div class="filter-bar" id="filterBar">
+      <div class="mobile-filter-header">
+        <h3>Filters & Schedule Options</h3>
+        <button class="close-filters-btn" onclick="toggleMobileFilters()">✕</button>
+      </div>
 
       <div class="view-tabs">
         <button class="tab active" id="tabPlanner" onclick="setView('planner')">Session Planner</button>
@@ -680,6 +780,10 @@ select:focus,input:focus{
 
 </div>
 
+<button class="mobile-filter-fab" onclick="toggleMobileFilters()">
+  <i class="ti ti-adjustments-horizontal"></i> Filters / Views
+</button>
+
 <script>
 const API_URL='https://slate--partners-technolutions-net.cdn.technolutions.net/portal/public-summit-schedule?cmd=search&cache=900';
 const SHEET_API='https://script.google.com/macros/s/AKfycbz8EvFEf0-1-rqyTb-KExaMK8uagfoaYL4-hoLcqabj5CYVs02jjmqAqMy08-CKDgVB/exec';
@@ -697,19 +801,30 @@ const esc=s=>String(s||'').replace(/[&<>]/g,m=>({
   '>':'&gt;'
 }[m]));
 
-// DYNAMIC STICKY HEIGHT CALCULATOR
 window.addEventListener('resize', updateStickyOffsets);
 
 function updateStickyOffsets() {
   const fb = document.querySelector('.filter-bar');
-  if (fb) {
-    const offset = 61 + fb.offsetHeight;
-    document.documentElement.style.setProperty('--day-top', offset + 'px');
-    
+  
+  if (window.innerWidth <= 900) {
+    document.documentElement.style.setProperty('--day-top', '0px');
     const dh = document.querySelector('.day-header');
     const dhHeight = dh ? dh.offsetHeight : 46; 
-    document.documentElement.style.setProperty('--time-top', (offset + dhHeight + 14) + 'px');
+    document.documentElement.style.setProperty('--time-top', (dhHeight + 14) + 'px');
+  } else {
+    if (fb) {
+      const offset = 61 + fb.offsetHeight;
+      document.documentElement.style.setProperty('--day-top', offset + 'px');
+      const dh = document.querySelector('.day-header');
+      const dhHeight = dh ? dh.offsetHeight : 46; 
+      document.documentElement.style.setProperty('--time-top', (offset + dhHeight + 14) + 'px');
+    }
   }
+}
+
+function toggleMobileFilters() {
+  const fb = q('filterBar');
+  if (fb) fb.classList.toggle('mobile-open');
 }
 
 function parseDay(dayStr){
@@ -721,9 +836,14 @@ function parseTime(timeStr){
   return new Date(`1970/01/01 ${timeStr}`);
 }
 
-function toggleDetails(id){
+function toggleDetails(id, btnEl){
   const el=q(id);
-  if(el) el.classList.toggle('open');
+  if(el) {
+    const isOpen = el.classList.toggle('open');
+    if (btnEl) {
+      btnEl.textContent = isOpen ? 'Hide Details' : 'View Details';
+    }
+  }
 }
 
 function setView(v){
@@ -731,6 +851,10 @@ function setView(v){
   q('tabPlanner').classList.toggle('active',v==='planner');
   q('tabMine').classList.toggle('active',v==='mine');
   q('tabTeam').classList.toggle('active',v==='team');
+  
+  const fb = q('filterBar');
+  if (fb) fb.classList.remove('mobile-open');
+  
   render();
 }
 
@@ -828,8 +952,25 @@ async function loadSessions(){
           else if (key.includes('presenter') && !presenters) presenters = val;
       }
 
+      let calculatedId = '';
+      const anchorLink = tr.querySelector('a[href*="id="]');
+      if (anchorLink) {
+        const queryMatch = anchorLink.href.match(/[?&]id=([^&]+)/);
+        if (queryMatch) calculatedId = queryMatch[1];
+      }
+      
+      if (!calculatedId) {
+        const structuralIdentity = (title + (obj['Date']||obj['Day']||'') + (obj['Time (CDT)']||obj['Time']||'')).replace(/\s+/g, '');
+        let numericHash = 0;
+        for (let k = 0; k < structuralIdentity.length; k++) {
+          numericHash = (numericHash << 5) - numericHash + structuralIdentity.charCodeAt(k);
+          numericHash |= 0;
+        }
+        calculatedId = 'shash-' + Math.abs(numericHash);
+      }
+
       return{
-        id:'s'+i,
+        id: calculatedId,
         title: title || 'Untitled Session',
         day:obj['Date']||obj['Day']||'',
         time:obj['Time (CDT)']||obj['Time']||'',
@@ -876,23 +1017,43 @@ async function loadPicks(){
   try{
     const r=await fetch(SHEET_API);
     const data=await r.json();
-    picks={};
     
+    const serverPicks = {};
     let allSheetUsers = new Set();
     
     data.forEach(row=>{
       if(row.userName) allSheetUsers.add(row.userName);
       
       if(row.sessionId && row.sessionId !== '__user_reg__') {
-        if(!picks[row.sessionId]) picks[row.sessionId]={};
-        picks[row.sessionId][row.userName]={
+        if(!serverPicks[row.sessionId]) serverPicks[row.sessionId]={};
+        serverPicks[row.sessionId][row.userName]={
           selected:row.selected===true||row.selected==='TRUE',
           rating:Number(row.rating||0),
           hidden:row.hidden===true||row.hidden==='TRUE'
         };
       }
     });
-    
+
+    const templatePicks = {};
+    for (let bid in picks) {
+      for (let usr in picks[bid]) {
+        if (picks[bid][usr]?.isPending) {
+          if (!templatePicks[bid]) templatePicks[bid] = {};
+          templatePicks[bid][usr] = picks[bid][usr];
+        }
+      }
+    }
+
+    for (let bid in serverPicks) {
+      if (!templatePicks[bid]) templatePicks[bid] = {};
+      for (let usr in serverPicks[bid]) {
+        if (!templatePicks[bid][usr]?.isPending) {
+          templatePicks[bid][usr] = serverPicks[bid][usr];
+        }
+      }
+    }
+
+    picks = templatePicks;
     populateNamesDropdown(Array.from(allSheetUsers).sort());
     render();
   }catch(e){
@@ -911,7 +1072,8 @@ async function togglePick(id){
   picks[id][currentUser]={
     selected:nowSelected,
     rating:ex?.rating||0,
-    hidden:ex?.hidden||false
+    hidden:ex?.hidden||false,
+    isPending:true
   };
 
   render();
@@ -924,7 +1086,15 @@ async function togglePick(id){
   form.append('rating',ex?.rating||0);
   form.append('hidden',ex?.hidden||false);
 
-  try{ await fetch(SHEET_API,{method:'POST',body:form}); await loadPicks(); }catch(e){}
+  try{ 
+    await fetch(SHEET_API,{method:'POST',body:form}); 
+    setTimeout(() => {
+      if(picks[id]?.[currentUser]) delete picks[id][currentUser].isPending;
+      loadPicks();
+    }, 1200);
+  }catch(e){
+    if(picks[id]?.[currentUser]) delete picks[id][currentUser].isPending;
+  }
 }
 
 async function setRating(id,rating){
@@ -937,7 +1107,8 @@ async function setRating(id,rating){
   picks[id][currentUser]={
     selected:ex?.selected||false,
     rating,
-    hidden:ex?.hidden||false
+    hidden:ex?.hidden||false,
+    isPending:true
   };
 
   render();
@@ -950,7 +1121,15 @@ async function setRating(id,rating){
   form.append('rating',rating);
   form.append('hidden',ex?.hidden||false);
 
-  try{ await fetch(SHEET_API,{method:'POST',body:form}); await loadPicks(); }catch(e){}
+  try{ 
+    await fetch(SHEET_API,{method:'POST',body:form}); 
+    setTimeout(() => {
+      if(picks[id]?.[currentUser]) delete picks[id][currentUser].isPending;
+      loadPicks();
+    }, 1200);
+  }catch(e){
+    if(picks[id]?.[currentUser]) delete picks[id][currentUser].isPending;
+  }
 }
 
 async function toggleHide(id, forceHidden){
@@ -963,7 +1142,8 @@ async function toggleHide(id, forceHidden){
   picks[id][currentUser]={
     selected:ex?.selected||false,
     rating:ex?.rating||0,
-    hidden:forceHidden
+    hidden:forceHidden,
+    isPending:true
   };
 
   render();
@@ -976,7 +1156,15 @@ async function toggleHide(id, forceHidden){
   form.append('rating',ex?.rating||0);
   form.append('hidden',forceHidden);
 
-  try{ await fetch(SHEET_API,{method:'POST',body:form}); await loadPicks(); }catch(e){}
+  try{ 
+    await fetch(SHEET_API,{method:'POST',body:form}); 
+    setTimeout(() => {
+      if(picks[id]?.[currentUser]) delete picks[id][currentUser].isPending;
+      loadPicks();
+    }, 1200);
+  }catch(e){
+    if(picks[id]?.[currentUser]) delete picks[id][currentUser].isPending;
+  }
 }
 
 function starsHtml(id,myRating){
@@ -1047,6 +1235,7 @@ function generateCard(s, viewType){
     else if(rated.length) cardClass += " rated";
   }else{
     if(mine) cardClass += " attending";
+    else if(myRating > 0) cardClass += " rated";
   }
 
   if(isHidden && viewType === 'planner') {
@@ -1081,7 +1270,7 @@ function generateCard(s, viewType){
           <div class="session-title">${esc(s.title)}</div>
           ${levelTrackStr ? `<div class="session-level">${levelTrackStr}</div>` : ''}
           
-          <button class="expand-btn" onclick="toggleDetails('${detailsId}')">View Details</button>
+          <button class="expand-btn" onclick="toggleDetails('${detailsId}', this)">View Details</button>
         </div>
         <div class="card-actions">
           ${hideBtnHTML}
