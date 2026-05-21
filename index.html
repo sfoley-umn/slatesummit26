@@ -1391,10 +1391,8 @@ function render(){
     }
 
     return true;
-  }).sort((a,b)=>{
-    const dayDiff=parseDay(a.day)-parseDay(b.day);
-    return dayDiff || (parseTime(a.time)-parseTime(b.time));
   });
+  // Sort removed here, we handle it per-view below for better granularity.
 
   q('statTotal').textContent=sessions.length||'—';
   q('statMine').textContent=sessions.filter(s=>picks?.[s.id]?.[currentUser]?.selected).length;
@@ -1430,9 +1428,16 @@ function render(){
     if(currentUser && !q('showHidden').checked) {
       base = base.filter(s => !(picks?.[s.id]?.[currentUser]?.hidden));
     }
+    
+    // Sort logic for standard planner view
+    base = [...base].sort((a,b)=>{
+      const dayDiff=parseDay(a.day)-parseDay(b.day);
+      return dayDiff || (parseTime(a.time)-parseTime(b.time));
+    });
+    
     feed.innerHTML=renderGrouped(base,plannerCard);
     
-  }else if(currentView==='mine'){
+  } else if(currentView === 'mine'){
     if(!currentUser){
       feed.innerHTML=`<div class="empty">Select your name to see your picks</div>`;
       setTimeout(updateStickyOffsets, 0);
@@ -1447,19 +1452,59 @@ function render(){
        });
     }
 
-    feed.innerHTML=renderGrouped(mineList,mineCard);
+    // Sort: Day -> Time -> Selected -> Rating (Highest to Lowest)
+    mineList = [...mineList].sort((a, b) => {
+      const dayDiff = parseDay(a.day) - parseDay(b.day);
+      if (dayDiff) return dayDiff;
+      
+      const timeDiff = parseTime(a.time) - parseTime(b.time);
+      if (timeDiff) return timeDiff;
+      
+      const aPick = picks?.[a.id]?.[currentUser] || {};
+      const bPick = picks?.[b.id]?.[currentUser] || {};
+      
+      if (!!aPick.selected !== !!bPick.selected) {
+        return aPick.selected ? -1 : 1;
+      }
+      return (bPick.rating || 0) - (aPick.rating || 0);
+    });
+
+    feed.innerHTML = renderGrouped(mineList, mineCard);
     if(!mineList.length){
-      feed.innerHTML=`<div class="empty">You haven't picked or rated any sessions yet</div>`;
+      feed.innerHTML = `<div class="empty">You haven't picked or rated any sessions yet</div>`;
     }
     
-  }else if(currentView==='team'){
-    const team=base.filter(s=>{
-      const vals=Object.values(picks[s.id]||{});
-      return vals.some(v=>v.selected || v.rating>0);
+  } else if(currentView === 'team'){
+    const team = base.filter(s => {
+      const vals = Object.values(picks[s.id]||{});
+      return vals.some(v => v.selected || v.rating > 0);
     });
-    feed.innerHTML=renderGrouped(team,teamCard);
+
+    // Sort: Day -> Time -> Selected by Anyone -> Highest Rating by Anyone
+    team.sort((a, b) => {
+      const dayDiff = parseDay(a.day) - parseDay(b.day);
+      if (dayDiff) return dayDiff;
+      
+      const timeDiff = parseTime(a.time) - parseTime(b.time);
+      if (timeDiff) return timeDiff;
+
+      const aVals = Object.values(picks[a.id]||{});
+      const bVals = Object.values(picks[b.id]||{});
+
+      const aSel = aVals.some(v => v.selected);
+      const bSel = bVals.some(v => v.selected);
+
+      if (aSel !== bSel) return aSel ? -1 : 1;
+
+      const aMaxRating = aVals.reduce((max, v) => Math.max(max, v.rating || 0), 0);
+      const bMaxRating = bVals.reduce((max, v) => Math.max(max, v.rating || 0), 0);
+
+      return bMaxRating - aMaxRating;
+    });
+
+    feed.innerHTML = renderGrouped(team, teamCard);
     if(!team.length){
-      feed.innerHTML=`<div class="empty">No team activity yet</div>`;
+      feed.innerHTML = `<div class="empty">No team activity yet</div>`;
     }
   }
 
