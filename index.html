@@ -809,12 +809,14 @@ select:focus,input:focus{
 
 <script>
 const API_URL='https://slate--partners-technolutions-net.cdn.technolutions.net/portal/public-summit-schedule?cmd=search&cache=900';
+// REMINDER: Make sure this is replaced with your new Web App URL if it changed during deployment!
 const SHEET_API='https://script.google.com/macros/s/AKfycbyiJTl2Ok2A-odEZJE4-Y-8HYzks8-kLfS6telLBwr7fndVZLmsjHwLMKq3Tg7zRr0/exec';
 
 let sessions=[],
     picks={},
     currentUser=localStorage.getItem('summitUser')||'',
-    currentView='planner';
+    currentView='planner',
+    expandedDetails=new Set(); // Tracks which session details are open
 
 const q=id=>document.getElementById(id);
 
@@ -864,6 +866,11 @@ function toggleDetails(id, btnEl){
   const el=q(id);
   if(el) {
     const isOpen = el.classList.toggle('open');
+    if (isOpen) {
+      expandedDetails.add(id);
+    } else {
+      expandedDetails.delete(id);
+    }
     if (btnEl) {
       btnEl.textContent = isOpen ? 'Hide Details' : 'View Details';
     }
@@ -939,6 +946,46 @@ async function saveName(){
   currentUser=sel.value;
   localStorage.setItem('summitUser',currentUser);
   render();
+}
+
+function saveFilters() {
+  const filters = {
+    search: q('search').value,
+    day: q('dayFilter').value,
+    time: q('timeFilter').value,
+    status: q('statusFilter').value,
+    rating: q('ratingFilter').value,
+    showHidden: q('showHidden').checked,
+    view: currentView
+  };
+  localStorage.setItem('summitFilters', JSON.stringify(filters));
+}
+
+function restoreFilters() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('summitFilters'));
+    if(saved) {
+      if(saved.search !== undefined) q('search').value = saved.search;
+      if(saved.day !== undefined) q('dayFilter').value = saved.day;
+      if(saved.time !== undefined) q('timeFilter').value = saved.time;
+      if(saved.status !== undefined) q('statusFilter').value = saved.status;
+      if(saved.rating !== undefined) q('ratingFilter').value = saved.rating;
+      if(saved.showHidden !== undefined) q('showHidden').checked = saved.showHidden;
+      if(saved.view) {
+        currentView = saved.view;
+        // Update tabs visually without triggering render yet
+        q('tabPlanner').classList.toggle('active', currentView === 'planner');
+        q('tabMine').classList.toggle('active', currentView === 'mine');
+        q('tabTeam').classList.toggle('active', currentView === 'team');
+        const badge = q('activeViewBadge');
+        if(badge) {
+          if(currentView === 'planner') badge.textContent = 'Planner';
+          else if(currentView === 'mine') badge.textContent = 'My Schedule';
+          else if(currentView === 'team') badge.textContent = 'Team Schedule';
+        }
+      }
+    }
+  } catch(e) {}
 }
 
 async function loadSessions(){
@@ -1042,6 +1089,9 @@ function populateFilters(){
     o.value=o.textContent=t;
     timeSel.appendChild(o);
   });
+
+  // Restore the saved filters right after the dynamic dropdown options are populated
+  restoreFilters();
 }
 
 async function loadPicks(){
@@ -1288,6 +1338,7 @@ function generateCard(s, viewType){
   }
 
   const detailsId = `details-${s.id}-${viewType}`;
+  const isExpanded = expandedDetails.has(detailsId);
   
   let levelTrackStr = "";
   if(s.level && s.track) levelTrackStr = `Level: ${esc(s.level)} | Track: ${esc(s.track)}`;
@@ -1301,7 +1352,7 @@ function generateCard(s, viewType){
           <div class="session-title">${esc(s.title)}</div>
           ${levelTrackStr ? `<div class="session-level">${levelTrackStr}</div>` : ''}
           
-          <button class="expand-btn" onclick="toggleDetails('${detailsId}', this)">View Details</button>
+          <button class="expand-btn" onclick="toggleDetails('${detailsId}', this)">${isExpanded ? 'Hide Details' : 'View Details'}</button>
         </div>
         <div class="card-actions">
           ${hideBtnHTML}
@@ -1338,7 +1389,7 @@ function generateCard(s, viewType){
         </div>
       `:''}
 
-      <div class="session-details" id="${detailsId}">
+      <div class="session-details${isExpanded ? ' open' : ''}" id="${detailsId}">
         ${s.presenters ? `<strong>Presenters:</strong><br>${esc(s.presenters)}<br><br>` : ''}
         ${esc(s.details) ? `<strong>Session Details:</strong><br>${esc(s.details)}` : ''}
       </div>
@@ -1504,6 +1555,7 @@ function render(){
     }
   }
 
+  saveFilters();
   setTimeout(updateStickyOffsets, 0);
 }
 
